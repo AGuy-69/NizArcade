@@ -26,12 +26,7 @@ const PROJECTS = [
   "Bad Red",
   "Squirrel Game"
 ];
-// stable while searching or going in and out of a project.
-const ORDER = [...PROJECTS];
-for (let i = ORDER.length - 1; i > 0; i--) {
-  const j = Math.floor(Math.random() * (i + 1));
-  [ORDER[i], ORDER[j]] = [ORDER[j], ORDER[i]];
-}
+
  
 const $ = id => document.getElementById(id);
 const path = (n, ext) => "PROJECTS/" + encodeURIComponent(n) + "." + ext;
