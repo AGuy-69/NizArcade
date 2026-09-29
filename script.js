@@ -22,7 +22,9 @@ const PROJECTS = [
   "Dropper",
   "Stones n boat",
   "cepatmakan",
-  "Unicorn Rainbow Run Bottles Edition"
+  "Unicorn Rainbow Run Bottles Edition",
+  "Bad Red",
+  "Squirrel Game"
 ];
 // stable while searching or going in and out of a project.
 const ORDER = [...PROJECTS];
