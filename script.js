@@ -67,7 +67,7 @@ async function openProject(name) {
   $("home").hidden = true;
   $("player").hidden = false;
   $("p-title").textContent = name;
-  document.title = name + " – Block Arcade";
+  document.title = name + " – Nizcade";
   setAmbient([name]);
   loadFrame(name);
  
@@ -94,7 +94,7 @@ function closeProject() {
   $("frame").src = "about:blank";   // stops audio and the game
   $("player").hidden = true;
   $("home").hidden = false;
-  document.title = "Block Arcade";
+  document.title = "Nizcade";
   setAmbient(ORDER);
 }
  
