@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seamless Page</title>
+    <style>
+        /* Remove default spacing and hide scrollbars on the parent page */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; 
+        }
+
+        /* Make the iframe truly seamless */
+        iframe {
+            display: block; /* Removes inline bottom whitespace gaps */
+            width: 100vw;
+            height: 100dvh; /* dvh fixes mobile browser address bar layout shifts */
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <iframe src="https://cepatmakan.web.id"></iframe>
+
+</body>
+</html>

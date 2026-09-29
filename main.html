@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Block Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="ambient" aria-hidden="true"></div>
+
+<header class="bar glass">
+  <a class="brand" href="#" id="home-link">
+    <img src="9578-thumbs-up-cat.png" style="width: 25px; height: auto;"></img>
+    <span>Block Arcade</span>
+  </a>
+  <input id="search" type="search" placeholder="Search projects" aria-label="Search projects">
+</header>
+
+<main id="home">
+  <h1>Play something</h1>
+  <div id="grid" class="grid"></div>
+  <p id="empty" class="empty" hidden>No projects match your search.</p>
+</main>
+
+<main id="player" hidden>
+  <div class="player-top">
+    <button class="btn glass" id="back">Back</button>
+    <h2 id="p-title"></h2>
+    <div class="tools">
+      <button class="btn glass" id="reload">Restart</button>
+      <button class="btn glass" id="full">Fullscreen</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="stage" id="stage">
+      <iframe id="frame" title="Project" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen></iframe>
+      <button class="btn glass" id="unfull" hidden>Exit fullscreen</button>
+      <div class="loader" id="loader">
+        <svg width="190" height="130" viewBox="0 0 190 130" aria-hidden="true"><path d="M8 8h48l6 6h30a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4z" fill="#444"/><path d="M8 62h40l6 6h20a4 4 0 0 1 4 4v22a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V66a4 4 0 0 1 4-4z" fill="#3a3a3a"/></svg>
+        <strong>Loading Project</strong>
+        <span>Creating blocks …</span>
+      </div>
+    </div>
+    <aside class="side">
+      <section class="panel glass">
+        <h3>Instructions</h3>
+        <div class="inst" id="inst" tabindex="0"></div>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+==================instruction================
+W: Move up
+S: Move down
+Click: Shoot
+
+-    Don't crash into the meteors and don't crash into the floor
+-    Meteors with more sides will have more health
+-    Ghost meteors (white ones) will not hurt you BUT it will block bullets
+
+=============================================
