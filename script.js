@@ -26,7 +26,8 @@ const PROJECTS = [
   "Bad Red",
   "Squirrel Game"
 ];
-
+// stable while searching or going in and out of a project.
+const ORDER = PROJECTS;
  
 const $ = id => document.getElementById(id);
 const path = (n, ext) => "PROJECTS/" + encodeURIComponent(n) + "." + ext;
