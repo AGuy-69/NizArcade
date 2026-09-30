@@ -26,13 +26,12 @@ const PROJECTS = [
   "Bad Red",
   "Squirrel Game"
 ];
-// stable while searching or going in and out of a project.
 const ORDER = PROJECTS;
- 
+
 const $ = id => document.getElementById(id);
 const path = (n, ext) => "PROJECTS/" + encodeURIComponent(n) + "." + ext;
 const grid = $("grid"), ambient = $("ambient");
- 
+
 function setAmbient(names) {
   ambient.innerHTML = "";
   ambient.classList.toggle("single", names.length === 1);
@@ -43,7 +42,7 @@ function setAmbient(names) {
     ambient.appendChild(i);
   });
 }
- 
+
 function renderGrid(filter = "") {
   grid.innerHTML = "";
   const list = ORDER.filter(n => n.toLowerCase().includes(filter.toLowerCase()));
@@ -60,7 +59,7 @@ function renderGrid(filter = "") {
     grid.appendChild(card);
   });
 }
- 
+
 async function openProject(name) {
   $("home").hidden = true;
   $("player").hidden = false;
@@ -68,7 +67,7 @@ async function openProject(name) {
   document.title = name + " – Nizcade";
   setAmbient([name]);
   loadFrame(name);
- 
+
   const inst = $("inst");
   inst.textContent = "Loading instructions …";
   try {
@@ -79,7 +78,7 @@ async function openProject(name) {
     inst.textContent = "No instructions for this project.";
   }
 }
- 
+
 function loadFrame(name) {
   const f = $("frame");
   $("loader").hidden = false;
@@ -87,7 +86,7 @@ function loadFrame(name) {
   f.src = "about:blank";
   setTimeout(() => { f.src = path(name, "html"); }, 30);
 }
- 
+
 function closeProject() {
   $("frame").src = "about:blank";   // stops audio and the game
   $("player").hidden = true;
@@ -95,19 +94,21 @@ function closeProject() {
   document.title = "Nizcade";
   setAmbient(ORDER);
 }
- 
+
 function route() {
   const m = location.hash.match(/^#play=(.+)$/);
   const name = m && decodeURIComponent(m[1]);
   if (name && PROJECTS.includes(name)) openProject(name);
   else closeProject();
 }
- 
+
+const restart = () => loadFrame(decodeURIComponent(location.hash.slice(6)));
+
 $("search").oninput = e => renderGrid(e.target.value);
 $("back").onclick = () => { location.hash = ""; };
 $("home-link").onclick = e => { e.preventDefault(); location.hash = ""; };
-$("reload").onclick = () => loadFrame(decodeURIComponent(location.hash.slice(6)));
-$("reload-invis").onclick = () => loadFrame(decodeURIComponent(location.hash.slice(6)));
+$("reload").onclick = restart;
+$("reload-invis").onclick = restart;
 $("full").onclick = () => {
   const s = $("stage");
   document.fullscreenElement ? document.exitFullscreen() : s.requestFullscreen();
@@ -117,12 +118,10 @@ document.addEventListener("fullscreenchange", () => {
   const on = !!document.fullscreenElement;
   $("unfull").hidden = !on;
   $("reload-invis").hidden = !on;
-
   $("full").textContent = on ? "Exit fullscreen" : "Fullscreen";
   if (!on) $("frame").focus();
 });
 window.onhashchange = route;
- 
+
 renderGrid();
 route();
- 

@@ -15,11 +15,19 @@
 
 <header class="bar glass">
   <a class="brand" href="#" id="home-link">
-    <img src="9578-thumbs-up-cat.png" style="width: 25px; height: auto;"></img>
+    <img src="9578-thumbs-up-cat.png" alt="" style="width: 25px; height: auto;">
     <span>Nizcade</span>
   </a>
   <input id="search" type="search" placeholder="Search projects" aria-label="Search projects">
 </header>
+
+<section class="notice glass" aria-label="About these projects">
+  <div class="blocks" aria-hidden="true"><i style="--c:#4d9dff"></i><i style="--c:#ffab19"></i><i style="--c:#59c059"></i></div>
+  <div>
+    <strong>Made with Scratch, by beginners</strong>
+    <p>Every project here was built by students we taught. These are first projects, so expect rough edges and cheer them on.</p>
+  </div>
+</section>
 
 <main id="home">
   <h1>Play something</h1>
@@ -29,7 +37,7 @@
 
 <main id="player" hidden>
   <div class="player-top">
-    <button class="btn glass" id="reload">
+    <button class="btn glass" id="reload" aria-label="Restart project">
       <svg xmlns="http://www.w3.org/2000/svg" fill="#59C059" viewBox="0 0 24 24" stroke-width="1.5" stroke="#59C059" class="size-6">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
       </svg>
@@ -43,14 +51,9 @@
   <div class="layout">
     <div class="stage" id="stage">
       <iframe id="frame" title="Project" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen></iframe>
-      <button class="btn glass" id="reload-invis" hidden>
-        <svg
-          xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#59C059" stroke="#59C059" stroke-width="1.5">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 1-6.208-.682L3 4.5M3 15V4.5"
-          />
+      <button class="btn glass" id="reload-invis" style="padding-left: 20px;" aria-label="Restart project" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#59C059" stroke="#59C059" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
         </svg>
       </button>
       <button class="btn glass" id="unfull" hidden>Exit fullscreen</button>
