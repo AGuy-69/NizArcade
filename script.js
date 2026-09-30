@@ -107,6 +107,7 @@ $("search").oninput = e => renderGrid(e.target.value);
 $("back").onclick = () => { location.hash = ""; };
 $("home-link").onclick = e => { e.preventDefault(); location.hash = ""; };
 $("reload").onclick = () => loadFrame(decodeURIComponent(location.hash.slice(6)));
+$("reload-invis").onclick = () => loadFrame(decodeURIComponent(location.hash.slice(6)));
 $("full").onclick = () => {
   const s = $("stage");
   document.fullscreenElement ? document.exitFullscreen() : s.requestFullscreen();
@@ -115,6 +116,8 @@ $("unfull").onclick = () => document.exitFullscreen();
 document.addEventListener("fullscreenchange", () => {
   const on = !!document.fullscreenElement;
   $("unfull").hidden = !on;
+  $("reload-invis").hidden = !on;
+
   $("full").textContent = on ? "Exit fullscreen" : "Fullscreen";
   if (!on) $("frame").focus();
 });
