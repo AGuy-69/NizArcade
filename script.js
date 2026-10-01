@@ -25,7 +25,8 @@ const PROJECTS = [
   "Unicorn Rainbow Run Bottles Edition",
   "Bad Red",
   "Squirrel Game",
-  "Birdy"
+  "Birdy",
+  "Squirell Fashion"
 ];
 const ORDER = PROJECTS;
 
