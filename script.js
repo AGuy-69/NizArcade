@@ -8,6 +8,7 @@
 ------------------------------------------------------------------- */
 const PROJECTS = [
   "Bunny jump",
+  "sean",
   "Advanced Engine Sim",
   "Submarine",
   "Asteroid shooter",
