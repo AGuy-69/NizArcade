@@ -4,70 +4,97 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nizcade</title>
+<meta name="description" content="Nizcade: free games to play in your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="shortcut icon" href="images.jpg" type="image/x-icon">
 </head>
-<body>
-<div id="ambient" aria-hidden="true"></div>
+<body class="bg-dots">
+<div id="ambient" aria-hidden="true"></div>  <!-- change to "bg-grid" for the square grid -->
 
-<header class="bar glass">
+<header class="bar">
   <a class="brand" href="#" id="home-link">
-    <img src="9578-thumbs-up-cat.png" alt="" style="width: 25px; height: auto;">
+    <img src="9578-thumbs-up-cat.png" alt="" width="24" height="24">
     <span>Nizcade</span>
   </a>
-  <input id="search" type="search" placeholder="Search projects" aria-label="Search projects">
+  <button class="bar-btn" id="bar-search">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    Search
+  </button>
 </header>
 
-<section class="notice glass" aria-label="About these projects">
-  <div class="blocks" aria-hidden="true"><i style="--c:#4d9dff"></i><i style="--c:#ffab19"></i><i style="--c:#59c059"></i></div>
-  <div>
-    <strong>Made with Scratch, by students</strong>
-    <p>Every project here was built by students Nizamia has taught. These are first projects, so expect rough edges and cheer them on.</p>
-  </div>
-</section>
+<div id="home">
+  <section class="wrap spot" aria-label="Find a game">
+    <h1>What do you want to play?</h1>
+    <div class="spot-box">
+      <div class="guide" id="guide">
+        <button class="cat-btn" id="cat" aria-label="Say hi to the cat"><img src="cat.png" alt="" width="96" height="96"></button>
+        <p class="bubble" id="bubble">Hi! Pick a game, any game.</p>
+      </div>
+      <div class="spot-field">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search" type="search" placeholder="Search games" aria-label="Search games" autocomplete="off"
+               role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list">
+      </div>
+      <ul id="results" class="results" role="listbox" hidden></ul>
+    </div>
+    <div class="spot-actions">
+      <button class="pill" id="surprise">Surprise me</button>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
 
-<main id="home">
-  <h1>Play something</h1>
-  <div id="grid" class="grid"></div>
-  <p id="empty" class="empty" hidden>No projects match your search.</p>
-</main>
+  <section class="wrap gallery" id="gallery">
+    <div class="gallery-head">
+      <h2>All games</h2>
+      <p class="count" id="count"></p>
+    </div>
+    <div id="grid" class="grid"></div>
+    <p id="empty" class="empty" hidden>No games match your search.</p>
+  </section>
+
+  <section class="twist" id="twist" aria-label="About Nizcade">
+    <div class="twist-inner">
+      <p class="t t1">Plot twist.</p>
+      <p class="t t2">Every game here was built in Scratch.</p>
+      <p class="t t3">By students. Their first projects.</p>
+      <div class="blocks t t4" aria-hidden="true"><i style="--c:#4d97ff"></i><i style="--c:#ffab19"></i><i style="--c:#59c059"></i></div>
+      <p class="t t5">Made by students taught at Nizamia. Rough edges and all, go cheer them on.</p>
+    </div>
+  </section>
+</div>
 
 <main id="player" hidden>
-  <div class="player-top">
-    <button class="btn glass" id="reload" aria-label="Restart project">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="#59C059" viewBox="0 0 24 24" stroke-width="1.5" stroke="#59C059" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
-      </svg>
-    </button>
-    <h2 id="p-title"></h2>
-    <div class="tools">
-      <button class="btn glass" id="back">Back</button>
-      <button class="btn glass" id="full">Fullscreen</button>
-    </div>
-  </div>
   <div class="layout">
-    <div class="stage" id="stage">
-      <iframe id="frame" title="Project" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen></iframe>
-      <button class="btn glass" id="reload-invis" style="padding-left: 20px;" aria-label="Restart project" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#59C059" stroke="#59C059" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
-        </svg>
-      </button>
-      <button class="btn glass" id="unfull" hidden>Exit fullscreen</button>
-      <div class="loader" id="loader">
-        <svg width="190" height="130" viewBox="0 0 190 130" aria-hidden="true"><path d="M8 8h48l6 6h30a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4z" fill="#444"/><path d="M8 62h40l6 6h20a4 4 0 0 1 4 4v22a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V66a4 4 0 0 1 4-4z" fill="#3a3a3a"/></svg>
-        <strong>Loading Project</strong>
-        <span>Creating blocks …</span>
+    <div class="window">
+      <div class="titlebar">
+        <div class="lights">
+          <button class="light red" id="back" aria-label="Back to all games" title="Back to all games"><span>&times;</span></button>
+          <button class="light yellow" id="reload" aria-label="Restart game" title="Restart"><span>&#8635;</span></button>
+          <button class="light green" id="full" aria-label="Fullscreen" title="Fullscreen"><span>+</span></button>
+        </div>
+        <h2 id="p-title" class="p-title"></h2>
+        <span class="spacer"></span>
+      </div>
+      <div class="stage" id="stage">
+        <iframe id="frame" title="Game" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen></iframe>
+        <div class="fs-tools" id="fs-tools" hidden>
+          <button class="pill mini" id="reload-fs" aria-label="Restart game">Restart</button>
+          <button class="pill mini" id="unfull">Exit fullscreen</button>
+        </div>
+        <div class="loader" id="loader" role="status">
+          <p class="load-label" id="load-label">Loading</p>
+          <div class="meter" id="load-track" role="progressbar" aria-label="Loading game" aria-valuemin="0" aria-valuemax="100"><div class="meter-fill" id="load-fill"></div></div>
+          <p class="load-pct" id="load-pct"></p>
+        </div>
       </div>
     </div>
-    <aside class="side">
-      <section class="panel glass">
-        <h3>Instructions</h3>
-        <div class="inst" id="inst" tabindex="0"></div>
-      </section>
+
+    <aside class="panel">
+      <h3>Instructions</h3>
+      <div class="inst" id="inst" tabindex="0"></div>
     </aside>
   </div>
 </main>
