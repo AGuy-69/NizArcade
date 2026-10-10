@@ -1,14 +1,13 @@
 /* ------------------------------------------------------------------
    ADD PROJECTS HERE.
    Each name must match the files inside the PROJECTS folder:
-     PROJECTS/<name>.html         the embed (loaded in the player)
+     PROJECTS/<name>/index.html   the game folder (index.html plus its assets)
      PROJECTS/<name>.instruction  plain text shown under "Instructions"
      PROJECTS/<name>.png          the thumbnail
    Browsers can't list folders, so this array is the project list.
 ------------------------------------------------------------------- */
 const PROJECTS = [
   "Bunny jump",
-  "sean",
   "Advanced Engine Sim",
   "Submarine",
   "Asteroid shooter",
@@ -31,7 +30,10 @@ const PROJECTS = [
 ];
 
 const $ = id => document.getElementById(id);
-const path = (n, ext) => "PROJECTS/" + encodeURIComponent(n) + "." + ext;
+// html -> PROJECTS/<name>/index.html (game folder); png and instruction -> PROJECTS/<name>.<ext>
+const path = (n, ext) => ext === "html"
+  ? "PROJECTS/" + encodeURIComponent(n) + "/index.html"
+  : "PROJECTS/" + encodeURIComponent(n) + "." + ext;
 const grid = $("grid"), ambient = $("ambient");
 let currentName = "";
 
@@ -45,11 +47,14 @@ function setAmbient(names) {
   names.forEach(n => {
     const i = new Image();
     i.alt = "";
+    i.decoding = "async";
     i.src = path(n, "png");
     i.onerror = () => i.remove();
     ambient.appendChild(i);
   });
 }
+
+const AMBIENT = [...PROJECTS].sort(() => Math.random() - 0.5).slice(0, 8);   // a few images are plenty once blurred
 
 /* a colour for each tile, taken from its artwork (falls back to one made from the name) */
 function nameColor(name) {
@@ -87,7 +92,7 @@ function tint(img, card, name) {
 function makeCard(name) {
   const card = document.createElement("button");
   card.className = "card";
-  card.innerHTML = '<div class="thumb"><span class="initial"></span><img alt="" loading="lazy"></div><h3></h3>';
+  card.innerHTML = '<div class="thumb"><span class="initial"></span><img alt="" loading="lazy" decoding="async"></div><h3></h3>';
   card.querySelector("h3").textContent = name;
   card.querySelector(".initial").textContent = name.trim().charAt(0).toUpperCase();
   const img = card.querySelector("img");
@@ -100,73 +105,7 @@ function makeCard(name) {
 
 /* the cat guide */
 const GREETING = "Hi! Pick a game, any game.";
-const CAT_LINES = [
-  "Meow! Pick one!",
-  "I like them all.",
-  "Psst… try Surprise me!",
-  "That one caught my eye!",
-  "Meow! New project!",
-  "Let's see what this does!",
-  "Your next favorite project might be here!",
-  "Paw-some choice!",
-  "I approve of this one!",
-  "Wait… have you tried Surprise Me?",
-  "So many cool creations!",
-  "Curious? Me too!",
-  "Let's go exploring!",
-  "A wild project appeared!",
-  "My whiskers say this one's good!",
-  "Ooooh… shiny!",
-  "I have a good feeling about this!",
-  "Click around! I won't bite.",
-  "Meow meow! Have fun!",
-  "oiiaiioiiiai",
-  "very tuff games",
-  "I feel so happy today, maybe these games will make you happy too!",
-  "clicks are ticklish. I love it!",
-  "Surprise!",
-  "Meow. What are we playing?",
-  "Just one more game. Probably.",
-  "That game looks purrfect.",
-  "I would play that. If I had thumbs.",
-  "New game detected. Initiating cat curiosity.",
-  "I have absolutely no idea what I'm doing. Let's click it.",
-  "This one has big main-character energy.",
-  "Achievement unlocked: you found me.",
-  "I was just taking a nap. Then you clicked me.",
-  "Do cats get XP? Asking for me.",
-  "That button looks suspicious. I like it.",
-  "Plot twist! You clicked me again.",
-  "My gaming strategy is mostly pressing buttons.",
-  "This game needs more cats. Obviously.",
-  "I have reviewed this game. My review is: meow.",
-  "You clicked me. I shall now provide wisdom.",
-  "The pixels are pixelating.",
-  "Loading thoughts... still loading...",
-  "Game time? Game time.",
-  "I smell a new high score.",
-  "This project has been cat-approved.",
-  "Be right back. Chasing a loading screen.",
-  "Why did the gamer bring a plant? To improve their graphics.",
-  "The environment is my favorite open-world game.",
-  "Earth has great graphics. Let's keep it that way.",
-  "Touch grass. I hear it's good for the planet.",
-  "Reduce, reuse, recycle... then come back and play.",
-  "I'm rooting for the trees.",
-  "Why did the tree join the game? It wanted to branch out.",
-  "This planet deserves a five-star rating.",
-  "Save the trees. They make excellent hiding spots.",
-  "Keep it green. My fur is already doing enough fluffing.",
-  "Pollution? That's definitely a bug we need to patch.",
-  "Earth needs fewer trash mobs.",
-  "Plant a tree. It's basically an IRL upgrade.",
-  "The planet said: please don't rage-quit reality.",
-  "Nature has the best graphics. No update required.",
-  "I tried to recycle this joke, but it was already used.",
-  "Be kind to the planet. It's our only server.",
-  "Okay, your turn. Pick something cool!",
-  GREETING
-];
+const CAT_LINES = ["Meow! Pick one!", "I like them all.", "Psst… try Surprise me!", GREETING];
 const say = text => { $("bubble").textContent = text; };
 function hop() {
   const cat = $("cat");
@@ -249,13 +188,14 @@ function setupSpot() {
   };
 }
 
+const cards = new Map();   // built once, then shown/hidden: no re-created images or re-computed colours while typing
 function renderGrid(filter = "") {
   const q = filter.trim().toLowerCase();
-  const list = PROJECTS.filter(n => n.toLowerCase().includes(q));
-  grid.innerHTML = "";
-  $("empty").hidden = list.length > 0;
-  $("count").textContent = q ? `${list.length} of ${PROJECTS.length}` : `${PROJECTS.length} games`;
-  list.forEach(n => grid.appendChild(makeCard(n)));
+  if (!cards.size) PROJECTS.forEach(n => { const c = makeCard(n); cards.set(n, c); grid.appendChild(c); });
+  let shown = 0;
+  cards.forEach((c, n) => { const ok = n.toLowerCase().includes(q); c.hidden = !ok; if (ok) shown++; });
+  $("empty").hidden = shown > 0;
+  $("count").textContent = q ? `${shown} of ${PROJECTS.length}` : `${PROJECTS.length} games`;
 }
 
 /* the plot twist: lines appear one by one when scrolled into view */
@@ -274,12 +214,14 @@ function setupTwist() {
 
 async function openProject(name) {
   currentName = name;
+  if (!$("home").hidden) homeScroll = scrollY;
   $("home").hidden = true;
   $("player").hidden = false;
+  document.body.classList.add("playing");
   $("p-title").textContent = name;
   document.title = name + " – Nizcade";
   setAmbient([name]);
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: "instant" });
   loadFrame(name);
 
   const inst = $("inst");
@@ -295,8 +237,8 @@ async function openProject(name) {
 }
 
 // Set to false to skip the download-progress step and load the game straight into the frame.
-const TRACK_PROGRESS = true;
-let loadId = 0, loadCtrl;
+const TRACK_PROGRESS = false;   // games are now folders with separate assets, so the game shows its own progress bar
+let loadId = 0, loadCtrl, homeScroll = 0;
 
 function setProgress(pct, label) {
   const track = $("load-track");
@@ -313,8 +255,20 @@ async function loadFrame(name) {
   if (loadCtrl) loadCtrl.abort();
   loadCtrl = new AbortController();
   $("loader").hidden = false;
+  $("loader").classList.remove("err");
   $("load-fill").style.width = "0%";
-  setProgress(0, "Downloading");
+  setProgress(TRACK_PROGRESS ? 0 : null, TRACK_PROGRESS ? "Downloading" : "Loading");
+  try {   // friendly message if the folder name or path is wrong
+    const head = await fetch(url, { method: "HEAD", signal: loadCtrl.signal });
+    if (!head.ok && head.status !== 405) {
+      if (id === loadId) {
+        $("loader").classList.add("err");
+        $("load-label").textContent = `Couldn't find this game. Check that PROJECTS/${name}/index.html exists.`;
+      }
+      return;
+    }
+  } catch (e) { if (e.name === "AbortError") return; }
+  if (id !== loadId) return;
   f.onload = null;
   f.src = "about:blank";
 
@@ -341,7 +295,7 @@ async function loadFrame(name) {
 
   await new Promise(r => setTimeout(r, 30));   // same short pause the original version used
   if (id !== loadId) return;
-  setProgress(null, "Starting");
+  setProgress(null, "Loading");
   f.onload = () => {
     try { if (f.contentWindow.location.href === "about:blank") return; } catch {}
     if (id !== loadId) return;
@@ -358,8 +312,10 @@ function closeProject() {
   $("frame").src = "about:blank";   // stops audio and the game
   $("player").hidden = true;
   $("home").hidden = false;
+  document.body.classList.remove("playing");
+  scrollTo({ top: homeScroll, behavior: "instant" });   // back to where you were in the list
   document.title = "Nizcade";
-  setAmbient(PROJECTS);
+  setAmbient(AMBIENT);
 }
 
 function route() {
@@ -391,29 +347,34 @@ renderGrid();
 setupTwist();
 route();
 
-/* the backdrop pattern lights up around the cursor */
+/* backdrop effects: one frame-throttled pointer handler; variables live on #fx so the page isn't restyled on every move */
+const fx = $("fx"), cat = $("cat");
+let px = 0, py = 0, pq = false;
 document.addEventListener("pointermove", e => {
-  const st = document.body.style;
-  st.setProperty("--mx", e.clientX + "px");
-  st.setProperty("--my", e.clientY + "px");
-  document.body.classList.add("lit");
-  const cat = $("cat");
-  if (cat && !$("guide").hidden) {
-    const r = cat.getBoundingClientRect();
-    const t = Math.max(-10, Math.min(10, (e.clientX - (r.left + r.width / 2)) / innerWidth * 30));
-    cat.style.setProperty("--tilt", t.toFixed(1) + "deg");
-  }
-});
-document.addEventListener("pointerleave", () => document.body.classList.remove("lit"));
-
-/* the backdrop fades out as you scroll down and returns as you scroll back up */
-let fadeQueued = false;
-function updateFade() {
-  fadeQueued = false;
-  const fade = Math.max(0, 1 - scrollY / (innerHeight * 0.6));
-  document.body.style.setProperty("--fade", fade.toFixed(3));
-}
-addEventListener("scroll", () => {
-  if (!fadeQueued) { fadeQueued = true; requestAnimationFrame(updateFade); }
+  px = e.clientX; py = e.clientY;
+  if (pq) return;
+  pq = true;
+  requestAnimationFrame(() => {
+    pq = false;
+    fx.style.setProperty("--mx", px + "px");
+    fx.style.setProperty("--my", py + "px");
+    fx.classList.add("lit");
+    if (!$("home").hidden && !$("guide").hidden && scrollY < innerHeight) {
+      const r = cat.getBoundingClientRect();
+      const tilt = Math.max(-10, Math.min(10, (px - (r.left + r.width / 2)) / innerWidth * 30));
+      cat.style.setProperty("--tilt", tilt.toFixed(1) + "deg");
+    }
+  });
 }, { passive: true });
+document.addEventListener("pointerleave", () => fx.classList.remove("lit"));
+
+/* the resting pattern fades out as you scroll down and returns as you scroll up */
+let fq = false;
+const updateFade = () => { fq = false; fx.style.setProperty("--fade", Math.max(0, 1 - scrollY / (innerHeight * 0.6)).toFixed(3)); };
+addEventListener("scroll", () => { if (!fq) { fq = true; requestAnimationFrame(updateFade); } }, { passive: true });
 updateFade();
+
+/* Esc goes back from a game (when focus is on the page, not inside the game) */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("player").hidden && !document.fullscreenElement) location.hash = "";
+});

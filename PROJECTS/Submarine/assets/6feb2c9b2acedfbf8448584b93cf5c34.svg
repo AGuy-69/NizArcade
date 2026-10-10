@@ -1,0 +1,10 @@
+<svg viewBox="-0.5 -0.5 481 361" height="361" width="481" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient gradientUnits="userSpaceOnUse" y2="359.955" x2="245.385" y1="0.045" x1="234.615" id="grad_1">
+      <stop stop-color="#1BB3A6" offset="0"></stop>
+      <stop stop-color="#175757" offset="1"></stop>
+    </linearGradient>
+  </defs>
+  
+  <path stroke-width="1" d="M 0 0 L 480 0 L 480 360 L 0 360 Z" fill="url(#grad_1)" id="ID0.06694872071966529"></path>
+</svg>
