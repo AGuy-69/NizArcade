@@ -105,13 +105,199 @@ function makeCard(name) {
 
 /* the cat guide */
 const GREETING = "Hi! Pick a game, any game.";
-const CAT_LINES = ["Meow! Pick one!", "I like them all.", "Psst… try Surprise me!", GREETING];
+const CAT_LINES = [
+  "Meow! Pick one!",
+  "I like them all.",
+  "Psst… try Surprise me!",
+  "That one caught my eye!",
+  "Meow! New project!",
+  "Let's see what this does!",
+  "Your next favorite project might be here!",
+  "Paw-some choice!",
+  "I approve of this one!",
+  "Wait… have you tried Surprise Me?",
+  "So many cool creations!",
+  "Curious? Me too!",
+  "Let's go exploring!",
+  "A wild project appeared!",
+  "My whiskers say this one's good!",
+  "Ooooh… shiny!",
+  "I have a good feeling about this!",
+  "Click around! I won't bite.",
+  "Meow meow! Have fun!",
+  "oiiaiioiiiai",
+  "very tuff games",
+  "I feel so happy today, maybe these games will make you happy too!",
+  "clicks are ticklish. I love it!",
+  "Surprise!",
+  "Meow. What are we playing?",
+  "Just one more game. Probably.",
+  "That game looks purrfect.",
+  "I would play that. If I had thumbs.",
+  "New game detected. Initiating cat curiosity.",
+  "I have absolutely no idea what I'm doing. Let's click it.",
+  "This one has big main-character energy.",
+  "Achievement unlocked: you found me.",
+  "I was just taking a nap. Then you clicked me.",
+  "Do cats get XP? Asking for me.",
+  "That button looks suspicious. I like it.",
+  "Plot twist! You clicked me again.",
+  "My gaming strategy is mostly pressing buttons.",
+  "This game needs more cats. Obviously.",
+  "I have reviewed this game. My review is: meow.",
+  "You clicked me. I shall now provide wisdom.",
+  "The pixels are pixelating.",
+  "Loading thoughts... still loading...",
+  "Game time? Game time.",
+  "I smell a new high score.",
+  "This project has been cat-approved.",
+  "Be right back. Chasing a loading screen.",
+  "Why did the gamer bring a plant? To improve their graphics.",
+  "The environment is my favorite open-world game.",
+  "Earth has great graphics. Let's keep it that way.",
+  "Touch grass. I hear it's good for the planet.",
+  "Reduce, reuse, recycle... then come back and play.",
+  "I'm rooting for the trees.",
+  "Why did the tree join the game? It wanted to branch out.",
+  "This planet deserves a five-star rating.",
+  "Save the trees. They make excellent hiding spots.",
+  "Keep it green. My fur is already doing enough fluffing.",
+  "Pollution? That's definitely a bug we need to patch.",
+  "Earth needs fewer trash mobs.",
+  "Plant a tree. It's basically an IRL upgrade.",
+  "The planet said: please don't rage-quit reality.",
+  "Nature has the best graphics. No update required.",
+  "I tried to recycle this joke, but it was already used.",
+  "Be kind to the planet. It's our only server.",
+  "Okay, your turn. Pick something cool!",
+  GREETING
+];
 const say = text => { $("bubble").textContent = text; };
 function hop() {
   const cat = $("cat");
   cat.classList.remove("hop");
   void cat.offsetWidth;
   cat.classList.add("hop");
+}
+
+/* easter egg: 51 clicks on the cat within 20 s starts a party: 33 s of catfull.gif, then 30 s of chaos */
+const RAVE_CLICKS = 20, RAVE_WINDOW = 20000, RAVE_INTRO = 33000, RAVE_LENGTH = 50000;
+let catClicks = [], raving = null, musicEl = null, musicFade = 0;
+function loadMusic() {   // created on the first cat click so it is already buffered by the 51st
+  if (!musicEl) {
+    musicEl = new Audio("music.mp3"); musicEl.preload = "auto"; musicEl.loop = true;
+    const preloadVid = document.createElement("link");
+    preloadVid.rel = "preload";
+    preloadVid.as = "video";
+    preloadVid.href = "cat.mov";
+    document.head.appendChild(preloadVid);
+  }
+  return musicEl;
+}
+
+function catClick() {
+  hop();
+  if (raving) return;
+  loadMusic();
+  const now = performance.now();
+  catClicks = catClicks.filter(t => now - t < RAVE_WINDOW);
+  catClicks.push(now);
+  const n = catClicks.length;
+  if (n >= RAVE_CLICKS) return startRave();
+  say(n === 20 ? "Hey, easy there…" : n === 10 ? "Okay, what are you doing?" : n === 19 ? "Wait. Do not click again." : CAT_LINES[Math.floor(Math.random() * CAT_LINES.length)]);
+}
+
+function startRave() {
+  catClicks = [];
+  const reduced = matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const st = { raf: 0, timers: [] };
+
+  st.root = document.createElement("div");
+  st.root.id = "rave";
+  st.root.setAttribute("aria-hidden", "true");
+  st.stop = document.createElement("button");
+  st.stop.id = "rave-stop";
+  st.stop.className = "pill";
+  st.stop.textContent = "Stop the party";
+  st.stop.onclick = stopRave;
+  st.note = document.createElement("p");
+  st.note.id = "rave-note";
+  st.note.setAttribute("role", "status");
+  document.body.append(st.root, st.stop, st.note);
+
+  // part 1: the real cat leaves its spot and the big catfull.gif takes the stage
+  $("guide").style.visibility = "hidden";
+  st.el = new Image();
+  st.el.id = "raver";
+  st.el.className = "intro";
+  st.el.alt = "";
+  st.el.onerror = () => { st.el.onerror = null; st.el.src = "cat.png"; };
+  st.el.src = "catfull.gif";
+  document.body.appendChild(st.el);
+  new Image().src = "cat.gif";                      // preloaded for the switch
+
+  clearInterval(musicFade);
+  st.music = loadMusic();
+  st.music.currentTime = 0;
+  st.music.volume = 0.7;
+  const p = st.music.play();
+  if (p) p.catch(err => {
+    console.error("music.mp3 did not play:", err, st.music.error);
+    if (err.name === "NotAllowedError") {           // browser wants one more click before it allows sound
+      st.note.textContent = "Your browser blocked the sound. Click anywhere to start the music.";
+      document.addEventListener("pointerdown", () => {
+        if (raving === st) st.music.play().then(() => { st.note.textContent = ""; }).catch(() => {});
+      }, { once: true });
+    } else {
+      st.note.textContent = "Couldn't play music.mp3. Check that it is in the same folder as index.html.";
+    }
+  });
+
+  // part 2: six spinning lights, and cat.gif bounces off the walls like a DVD logo
+  const lights = [[320, 8, 0, 1.7], [190, 92, 0, 2.1], [50, 50, 100, 2.5], [130, 20, 100, 1.9], [270, 80, 100, 3.0], [10, 50, 0, 2.3]];
+  let x = innerWidth / 2 - 60, y = innerHeight / 2 - 60, hue = 0, last = 0;
+  const speed = Math.max(innerWidth, 800) * 2;
+  let vx = speed, vy = speed * 0.78;
+  const tick = now => {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    x += vx * dt; y += vy * dt;
+    const mx = innerWidth - st.el.offsetWidth, my = innerHeight - st.el.offsetHeight;
+    let hit = false;
+    if (x <= 0) { x = 0; vx = Math.abs(vx); hit = true; } else if (x >= mx) { x = mx; vx = -Math.abs(vx); hit = true; }
+    if (y <= 0) { y = 0; vy = Math.abs(vy); hit = true; } else if (y >= my) { y = my; vy = -Math.abs(vy); hit = true; }
+    if (hit) { hue = (hue + 67) % 360; st.el.style.setProperty("--glow", `hsl(${hue} 100% 60%)`); }
+    st.el.style.transform = `translate3d(${x}px,${y}px,0)`;
+    st.raf = requestAnimationFrame(tick);
+  };
+  const crazy = () => {
+    if (raving !== st) return;
+    st.root.insertAdjacentHTML("beforeend", lights.map(([h, lx, ly, d], i) =>
+      `<i class="beam" style="--h:${h};--x:${lx}%;--y:${ly}%;--d:${d}s;--s:${i % 2 ? -1 : 1}"></i>`).join(""));
+    st.el.className = "";
+    st.el.onerror = () => { st.el.onerror = null; st.el.src = "cat.png"; };
+    st.el.src = "cat.gif";
+    if (reduced) st.el.style.transform = `translate3d(${x}px,${innerHeight * 0.6}px,0)`;   // calm version: no bouncing
+    else { last = performance.now(); st.raf = requestAnimationFrame(tick); }
+    st.timers.push(setTimeout(stopRave, RAVE_LENGTH));
+  };
+  st.timers.push(setTimeout(crazy, RAVE_INTRO));
+  raving = st;
+}
+
+function stopRave() {
+  if (!raving) return;
+  const st = raving;
+  raving = null;
+  st.timers.forEach(clearTimeout);
+  cancelAnimationFrame(st.raf);
+  st.root.remove(); st.stop.remove(); st.el.remove(); st.note.remove();
+  $("guide").style.visibility = "";
+  say("Phew! Now pick a game.");
+  musicFade = setInterval(() => {                   // music fades out over about a second
+    st.music.volume = Math.max(0, st.music.volume - 0.07);
+    if (st.music.volume <= 0) { clearInterval(musicFade); st.music.pause(); }
+  }, 100);
 }
 
 /* spotlight hero: search, suggestions, surprise me */
@@ -166,7 +352,7 @@ function setupSpot() {
   $("surprise").onclick = () => { hop(); say("Ooh, a surprise!"); setTimeout(() => go(random()), 450); };
   const catImg = $("cat").querySelector("img");
   catImg.onerror = () => { $("guide").hidden = true; };
-  $("cat").onclick = () => { hop(); say(CAT_LINES[Math.floor(Math.random() * CAT_LINES.length)]); };
+  $("cat").onclick = catClick;
   search.oninput = () => {
     active = 0; renderGrid(search.value); renderResults();
     const q = search.value.trim().toLowerCase(), n = PROJECTS.filter(p => p.toLowerCase().includes(q)).length;
@@ -214,6 +400,7 @@ function setupTwist() {
 
 async function openProject(name) {
   currentName = name;
+  stopRave();   // a game has its own sound
   if (!$("home").hidden) homeScroll = scrollY;
   $("home").hidden = true;
   $("player").hidden = false;
@@ -376,5 +563,6 @@ updateFade();
 
 /* Esc goes back from a game (when focus is on the page, not inside the game) */
 document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && raving) return stopRave();
   if (e.key === "Escape" && !$("player").hidden && !document.fullscreenElement) location.hash = "";
 });

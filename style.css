@@ -152,3 +152,16 @@ body.bg-grid{--pat:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),li
 .pill,.chip,.bar-btn{min-height:44px}
 .pill.mini{min-height:38px}
 body.playing #fx{display:none}
+
+/* easter egg: party mode */
+#rave{position:fixed;inset:0;z-index:40;pointer-events:none;overflow:hidden;background:radial-gradient(ellipse at 50% 100%,rgba(0,0,0,.2),rgba(4,4,12,.62));animation:ravein .8s ease both}
+@keyframes ravein{from{opacity:0}}
+.beam{position:absolute;top:var(--y);left:var(--x);width:44vmax;height:150vmax;margin-left:-22vmax;transform-origin:50% 0;clip-path:polygon(44% 0,56% 0,100% 100%,0 100%);background:linear-gradient(hsla(var(--h),100%,70%,.85),hsla(var(--h),100%,60%,0) 80%);mix-blend-mode:screen;animation:spin var(--d) linear infinite,beamin .8s ease both;will-change:transform}
+@keyframes beamin{from{opacity:0}}
+@keyframes spin{to{transform:rotate(calc(var(--s) * 360deg))}}
+#raver{position:fixed;left:0;top:0;z-index:41;width:clamp(90px,10vw,140px);height:auto;pointer-events:none;will-change:transform;filter:drop-shadow(0 0 16px var(--glow,#ff4fd8))}
+#rave-stop{position:fixed;bottom:22px;left:0;right:0;margin:auto;width:max-content;z-index:42;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+#rave-note{position:fixed;bottom:84px;left:0;right:0;margin:auto;width:max-content;max-width:90vw;z-index:42;padding:8px 16px;border-radius:12px;background:rgba(0,0,0,.75);color:#fff;font-size:15px;text-align:center}
+#rave-note:empty{display:none}
+#raver.intro{left:50%;top:50%;width:min(70vw,520px);max-height:80vh;object-fit:contain;transform:translate(-50%,-50%);animation:popin .7s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes popin{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}}
