@@ -27,7 +27,7 @@ const PROJECTS = [
   "Squirrel Game",
   "Birdy",
   "Squirell Fashion",
-  "Sean"
+  "sean"
 ];
 
 const $ = id => document.getElementById(id);
