@@ -181,7 +181,7 @@ function hop() {
 }
 
 /* easter egg: 51 clicks on the cat within 20 s starts a party: 33 s of catfull.gif, then 30 s of chaos */
-const RAVE_CLICKS = 20, RAVE_WINDOW = 20000, RAVE_INTRO = 33000, RAVE_LENGTH = 50000;
+const RAVE_CLICKS = 20, RAVE_WINDOW = 20000, RAVE_INTRO = 34000, RAVE_LENGTH = 50000;
 let catClicks = [], raving = null, musicEl = null, musicFade = 0;
 function loadMusic() {   // created on the first cat click so it is already buffered by the 51st
   if (!musicEl) {
