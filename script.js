@@ -32,7 +32,8 @@ const SCRATCH = [
 const WEBSITES = [
   "Cepatmakan",
   "Katakana",
-  "Shuto run"
+  "Shuto run",
+  "2027 F1 Season Sim"
 ];
 
 const CATALOG = {
