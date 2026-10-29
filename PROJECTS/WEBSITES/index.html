@@ -1,0 +1,2496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Skyline — Airline Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-deep:#0a1622;
+  --navy:#0e1f30;
+  --navy-card:#132a3e;
+  --navy-card-2:#183349;
+  --slate:#7c93a8;
+  --slate-dim:#4d6070;
+  --gold:#f2b955;
+  --gold-dim:#a4823f;
+  --cyan:#39d6c8;
+  --red:#ec6a5e;
+  --white:#eef4f8;
+  --line:#22405a;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--navy-deep); color:var(--white);
+  font-family:'Space Grotesk',sans-serif;
+  overflow:hidden; position:fixed; inset:0;
+  user-select:none;
+}
+h1,h2,h3{font-family:'Archivo Black',sans-serif; font-weight:400; margin:0; letter-spacing:0.5px;}
+.mono{font-family:'Space Mono',monospace;}
+#app{height:100%; display:flex; flex-direction:column;}
+
+/* ---------- SETUP SCREEN ---------- */
+#setup{
+  height:100%; overflow-y:auto; padding:28px 20px 40px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(57,214,200,0.10), transparent 45%),
+    radial-gradient(circle at 90% 20%, rgba(242,185,85,0.10), transparent 40%),
+    var(--navy-deep);
+}
+.setup-eyebrow{color:var(--cyan); font-family:'Space Mono',monospace; font-size:11px; letter-spacing:3px; text-transform:uppercase;}
+.setup-title{font-size:34px; line-height:1.05; margin-top:8px;}
+.setup-title span{color:var(--gold);}
+.setup-sub{color:var(--slate); font-size:14px; margin-top:10px; max-width:480px;}
+.setup-step{margin-top:30px;}
+.step-label{font-family:'Space Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;}
+input[type=text]{
+  width:100%; background:var(--navy-card); border:1px solid var(--line); color:var(--white);
+  font-family:'Space Grotesk',sans-serif; font-size:18px; padding:14px 16px; border-radius:10px; outline:none;
+}
+input[type=text]:focus{border-color:var(--cyan);}
+.swatches,.icons{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;}
+.swatch{width:40px; height:40px; border-radius:50%; border:2px solid transparent; cursor:pointer;}
+.swatch.sel{border-color:var(--white); transform:scale(1.1);}
+.icon-btn{
+  width:52px; height:52px; border-radius:12px; background:var(--navy-card); border:1px solid var(--line);
+  font-size:24px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.icon-btn.sel{border-color:var(--gold); background:var(--navy-card-2); box-shadow:0 0 0 1px var(--gold) inset;}
+.logo-preview{display:flex; align-items:center; gap:14px; margin-top:22px; padding:16px; background:var(--navy-card); border-radius:14px; border:1px solid var(--line);}
+.logo-badge-wrap{flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:6px;}
+.logo-badge{width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; box-shadow:0 4px 14px rgba(0,0,0,0.35);}
+.logo-stripe{width:56px; height:5px; border-radius:3px; opacity:0.85;}
+.logo-preview .lp-name{font-family:'Archivo Black',sans-serif; font-size:18px;}
+.logo-preview .lp-tag{color:var(--slate); font-size:12px; font-family:'Space Mono',monospace; margin-top:2px;}
+.step-label{display:flex; align-items:center; gap:8px;}
+.step-check{
+  width:20px; height:20px; border-radius:50%; background:var(--navy-card); border:1px solid var(--line);
+  color:var(--slate); font-size:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  font-family:'Space Mono',monospace; transition:background .2s, border-color .2s, color .2s;
+}
+.step-check.done{background:var(--gold); border-color:var(--gold); color:#1a1206; font-size:0;}
+.step-check.done::after{content:'✓'; font-size:11px;}
+#setupMapOuter{position:relative; height:260px; border-radius:14px; overflow:hidden; border:1px solid var(--line);}
+#setupMapWrap{height:100%; overflow:hidden; position:relative; touch-action:none; cursor:grab; background:radial-gradient(ellipse at 50% 20%, #0f2436 0%, var(--navy-deep) 70%);}
+#setupMapWrap.dragging{cursor:grabbing;}
+#setupMapSvg{width:1120px; height:560px; display:block; transform-origin:0 0; will-change:transform;}
+.home-readout{margin-top:10px; font-size:12px; color:var(--slate); background:var(--navy-card); border:1px solid var(--line); border-radius:10px; padding:10px 12px;}
+.big-btn{
+  margin-top:30px; width:100%; padding:18px; border-radius:14px; border:none; cursor:pointer;
+  background:linear-gradient(135deg,var(--gold),#d99a3a); color:#1a1206; font-family:'Archivo Black',sans-serif;
+  font-size:16px; letter-spacing:0.5px;
+}
+.big-btn:disabled{opacity:0.35; background:var(--slate-dim); color:#0a1622;}
+
+/* ---------- HEADER ---------- */
+#header{
+  flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 14px; background:var(--navy); border-bottom:1px solid var(--line); z-index:5;
+}
+.hdr-left{display:flex; align-items:center; gap:10px; min-width:0;}
+.hdr-badge{width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;}
+.hdr-name{font-family:'Archivo Black',sans-serif; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:110px;}
+.hdr-week{color:var(--slate); font-size:10px; font-family:'Space Mono',monospace;}
+.hdr-right{display:flex; align-items:center; gap:10px;}
+.cash-pill{
+  background:var(--navy-card); border:1px solid var(--line); border-radius:20px; padding:8px 14px;
+  font-family:'Space Mono',monospace; font-size:13px; color:var(--gold); font-weight:700; white-space:nowrap;
+}
+.cash-pill.neg{color:var(--red);}
+.reset-btn{background:var(--navy-card); border:1px solid var(--line); color:var(--slate); width:34px; height:34px; border-radius:50%; font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.reset-btn:active{color:var(--red); border-color:var(--red);}
+.size-bar{display:flex; gap:3px; margin-top:8px;}
+.size-seg{flex:1; text-align:center; font-family:'Space Mono',monospace; font-size:9px; padding:4px 0; border-radius:5px; background:var(--navy); color:var(--slate-dim); border:1px solid var(--line);}
+.size-seg.on{background:var(--navy-card-2); color:var(--slate); border-color:var(--line);}
+.size-seg.cur{background:var(--gold); color:#1a1206; border-color:var(--gold); font-weight:700;}
+.stars{font-size:22px; letter-spacing:2px; color:var(--gold);}
+.news-item{background:var(--navy-card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px;}
+.news-item .ni-week{font-family:'Space Mono',monospace; font-size:10px; color:var(--slate); text-transform:uppercase; letter-spacing:1px;}
+.news-item .ni-text{font-size:13px; margin-top:5px; line-height:1.4;}
+.news-item.review .ni-text{font-style:italic; color:var(--slate);}
+.subtabs{display:flex; gap:8px; margin-top:14px;}
+.subtab-btn{flex:1; background:var(--navy-card); border:1px solid var(--line); color:var(--slate); padding:10px 4px; border-radius:10px; font-size:12px; cursor:pointer; font-family:'Space Grotesk',sans-serif;}
+.subtab-btn.active{background:var(--navy-card-2); border-color:var(--gold); color:var(--gold);}
+.tier-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line);}
+.tier-row:last-child{border-bottom:none;}
+.tier-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+.tier-dot.done{background:var(--cyan);} .tier-dot.next{background:var(--gold);} .tier-dot.locked{background:var(--slate-dim);}
+.toggle-row{display:flex; background:var(--navy); border-radius:10px; padding:4px; margin-top:14px; border:1px solid var(--line);}
+.toggle-opt{flex:1; text-align:center; padding:9px 4px; border-radius:8px; font-size:12px; cursor:pointer; font-family:'Space Mono',monospace;}
+.toggle-opt.active{background:var(--gold); color:#1a1206; font-weight:700;}
+
+/* ---------- MAIN ---------- */
+#main{flex:1; overflow:hidden; position:relative;}
+.view{position:absolute; inset:0; overflow-y:auto; display:none; padding-bottom:90px;}
+#view-map{overflow:hidden; padding-bottom:0;}
+.view.active{display:block;}
+
+/* map */
+#mapWrap{height:100%; padding:0; overflow:hidden; position:relative; touch-action:none; cursor:grab; background:radial-gradient(ellipse at 50% 20%, #0f2436 0%, var(--navy-deep) 70%);}
+#mapWrap.dragging{cursor:grabbing;}
+#mapSvg{width:1120px; height:560px; display:block; transform-origin:0 0; will-change:transform;}
+.map-zoom-controls{position:absolute; right:12px; bottom:70px; z-index:4; display:flex; flex-direction:column; gap:8px;}
+.zoom-btn{width:38px; height:38px; border-radius:10px; background:rgba(10,22,34,0.85); border:1px solid var(--line); color:var(--white); font-size:18px; cursor:pointer; backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center;}
+.zoom-btn.center-btn{font-size:14px;}
+.city-dot{cursor:pointer;}
+.city-label{font-family:'Space Mono',monospace; font-size:9px; fill:var(--slate); pointer-events:none;}
+.city-label.unlocked{fill:var(--white);}
+.route-arc{fill:none; stroke:var(--cyan); stroke-width:1.4; opacity:0.55; stroke-dasharray:5 4; animation:dash 3s linear infinite;}
+@keyframes dash{to{stroke-dashoffset:-90;}}
+.map-legend{position:absolute; left:12px; bottom:12px; background:rgba(10,22,34,0.85); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:10px; color:var(--slate); font-family:'Space Mono',monospace; line-height:1.8;}
+#dashboardPanel{position:absolute; top:12px; left:12px; right:12px; max-width:260px; z-index:4;}
+.dash-title{font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--gold); background:rgba(10,22,34,0.85); border:1px solid var(--line); border-radius:8px; padding:6px 10px; margin:8px 0; backdrop-filter:blur(4px);}
+#dashboardCards{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+#dashboardPanel.hidden .dash-title, #dashboardPanel.hidden #dashboardCards{display:none;}
+.dash-card{background:rgba(19,42,62,0.82); border:1px solid var(--line); border-radius:12px; padding:10px 12px; backdrop-filter:blur(6px);}
+.dash-card .dv{font-family:'Space Mono',monospace; font-size:15px; font-weight:700;}
+.dash-card .dl{color:var(--slate); font-size:9px; text-transform:uppercase; letter-spacing:1px; margin-top:2px;}
+.dash-card.good .dv{color:var(--cyan);} .dash-card.bad .dv{color:var(--red);} .dash-card.gold .dv{color:var(--gold);}
+.dash-toggle{background:rgba(10,22,34,0.85); border:1px solid var(--line); color:var(--slate); font-family:'Space Mono',monospace; font-size:10px; padding:7px 12px; border-radius:20px; cursor:pointer; backdrop-filter:blur(4px);}
+.ig-card{background:var(--navy-card); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:14px;}
+.ig-head{display:flex; align-items:center; gap:8px; padding:10px 12px;}
+.ig-avatar{width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; color:#fff; font-weight:700;}
+.ig-handle{font-weight:700; font-size:12px;}
+.ig-time{color:var(--slate); font-size:10px; font-family:'Space Mono',monospace;}
+.ig-body{display:flex; gap:0;}
+.ig-photo{width:100px; min-width:100px; height:130px; display:flex; align-items:center; justify-content:center; font-size:34px; flex-shrink:0;}
+.ig-caption{padding:10px 12px; flex:1; min-width:0;}
+.ig-title{font-weight:700; font-size:13px; margin-bottom:4px;}
+.ig-text{font-size:12px; color:var(--white); line-height:1.4;}
+.ig-comments{margin-top:8px; border-top:1px solid var(--line); padding-top:8px;}
+.ig-comment{font-size:11px; color:var(--slate); margin-top:4px; line-height:1.4;}
+.ig-comment b{color:var(--white); font-weight:600;}
+.ig-stats{display:flex; gap:14px; padding:8px 12px 12px; font-size:11px; color:var(--slate); font-family:'Space Mono',monospace;}
+.map-legend span.dotL{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px;}
+
+/* generic section */
+.section{padding:18px 16px 10px;}
+.section-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+.section-title{font-size:20px;}
+.section-sub{color:var(--slate); font-size:12px; margin-top:4px;}
+.pill-btn{background:var(--navy-card-2); border:1px solid var(--gold-dim); color:var(--gold); padding:9px 14px; border-radius:10px; font-size:12px; font-family:'Space Mono',monospace; cursor:pointer;}
+.card{background:var(--navy-card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:12px;}
+.card-row{display:flex; align-items:center; justify-content:space-between;}
+.card-title{font-weight:700; font-size:15px;}
+.card-meta{color:var(--slate); font-size:11px; font-family:'Space Mono',monospace; margin-top:4px;}
+.tag{display:inline-block; padding:3px 8px; border-radius:6px; font-size:10px; font-family:'Space Mono',monospace; margin-top:6px; margin-right:6px;}
+.tag.idle{background:rgba(124,147,168,0.15); color:var(--slate);}
+.tag.active{background:rgba(57,214,200,0.15); color:var(--cyan);}
+.tag.hub{background:rgba(242,185,85,0.18); color:var(--gold);}
+.tag.warn{background:rgba(236,106,94,0.18); color:var(--red);}
+.empty-state{text-align:center; padding:50px 20px; color:var(--slate);}
+.empty-state .ee-icon{font-size:38px; margin-bottom:10px;}
+.empty-state .ee-title{color:var(--white); font-weight:700; margin-bottom:6px;}
+.empty-state .ee-sub{font-size:12px; max-width:260px; margin:0 auto;}
+
+.mini-btn{background:transparent; border:1px solid var(--line); color:var(--white); padding:7px 12px; border-radius:8px; font-size:11px; cursor:pointer; font-family:'Space Mono',monospace;}
+.mini-btn.danger{border-color:var(--red); color:var(--red);}
+.mini-btn.accent{border-color:var(--cyan); color:var(--cyan);}
+.mini-btn:disabled{opacity:0.3;}
+
+.slider-row{margin-top:10px;}
+.slider-row input[type=range]{width:100%; accent-color:var(--gold);}
+.slider-labels{display:flex; justify-content:space-between; font-size:10px; color:var(--slate); font-family:'Space Mono',monospace;}
+
+.stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.stat-box{background:var(--navy-card); border:1px solid var(--line); border-radius:12px; padding:12px 14px;}
+.stat-box .sv{font-family:'Space Mono',monospace; font-size:18px; font-weight:700;}
+.stat-box .sl{color:var(--slate); font-size:10px; margin-top:3px; text-transform:uppercase; letter-spacing:1px;}
+.stat-box.good .sv{color:var(--cyan);} .stat-box.bad .sv{color:var(--red);} .stat-box.gold .sv{color:var(--gold);}
+
+.staff-row{display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line);}
+.staff-row:last-child{border-bottom:none;}
+.staff-count{font-family:'Space Mono',monospace; font-size:16px; min-width:70px; text-align:center;}
+.staff-count.short{color:var(--red);}
+.staff-btns{display:flex; gap:6px;}
+.circ-btn{width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--navy-card-2); color:var(--white); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+
+.log-item{display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:11px; padding:8px 0; border-bottom:1px dashed var(--line); color:var(--slate);}
+.log-item .lv{color:var(--white);}
+.log-item .lv.pos{color:var(--cyan);} .log-item .lv.neg{color:var(--red);}
+
+.advance-bar{position:fixed; left:0; right:0; bottom:64px; padding:0 14px; z-index:6;}
+.advance-btn{width:100%; padding:14px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--cyan),#1fa89c); color:#04211e; font-family:'Archivo Black',sans-serif; font-size:14px; cursor:pointer; box-shadow:0 6px 20px rgba(57,214,200,0.25);}
+
+/* bottom nav */
+#nav{flex-shrink:0; display:flex; background:var(--navy); border-top:1px solid var(--line); z-index:6; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+.nav-btn{flex:0 0 auto; min-width:64px; background:none; border:none; color:var(--slate); padding:10px 6px 8px; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; font-family:'Space Mono',monospace; font-size:9px;}
+.nav-btn .ni{font-size:18px;}
+.nav-btn.active{color:var(--gold);}
+
+/* modal */
+.modal-bg{position:fixed; inset:0; background:rgba(5,12,20,0.75); z-index:20; display:none; align-items:flex-end;}
+.modal-bg.open{display:flex;}
+.modal{width:100%; max-height:88vh; overflow-y:auto; background:var(--navy); border-radius:20px 20px 0 0; padding:20px 18px 30px; border-top:1px solid var(--line);}
+.modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+.modal-close{background:var(--navy-card); border:1px solid var(--line); color:var(--slate); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:16px;}
+.shop-card{background:var(--navy-card); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:12px;}
+.shop-stats{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:10px 0; font-family:'Space Mono',monospace; font-size:10px; color:var(--slate);}
+.shop-stats b{display:block; color:var(--white); font-size:13px;}
+.buy-btn{width:100%; padding:11px; border-radius:10px; border:none; background:var(--gold); color:#1a1206; font-weight:700; cursor:pointer; font-family:'Space Mono',monospace;}
+.buy-btn:disabled{background:var(--slate-dim); color:#0a1622;}
+select{width:100%; background:var(--navy-card-2); color:var(--white); border:1px solid var(--line); padding:12px; border-radius:10px; font-family:'Space Grotesk',sans-serif; font-size:14px;}
+label.f-label{font-size:11px; color:var(--slate); font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:1px; display:block; margin:14px 0 6px;}
+.toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); background:var(--navy-card-2); border:1px solid var(--gold); color:var(--gold); padding:10px 18px; border-radius:30px; font-size:12px; font-family:'Space Mono',monospace; z-index:50; opacity:0; transition:opacity .3s, top .3s;}
+.toast.show{opacity:1; top:24px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ SETUP SCREEN ============ -->
+  <div id="setup">
+    <div class="setup-eyebrow">NEW CARRIER · FOUNDING</div>
+    <div class="setup-title">Build an airline<br>from <span>gate one.</span></div>
+    <div class="setup-sub">Name it, brand it, pick a home base — then start flying. You've got $12,000,000 in seed capital and a route map to fill.</div>
+
+    <div class="setup-step">
+      <div class="step-label"><span class="step-check" data-step="1">1</span>Airline name</div>
+      <input type="text" id="nameInput" maxlength="24" placeholder="e.g. Meridian Air">
+    </div>
+
+    <div class="setup-step">
+      <div class="step-label"><span class="step-check" data-step="2">2</span>Livery color</div>
+      <div class="swatches" id="colorSwatches"></div>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-label"><span class="step-check" data-step="3">3</span>Emblem</div>
+      <div class="icons" id="iconSwatches"></div>
+    </div>
+
+    <div class="logo-preview">
+      <div class="logo-badge-wrap">
+        <div class="logo-badge" id="logoPreviewBadge">✈️</div>
+        <div class="logo-stripe" id="logoPreviewStripe"></div>
+      </div>
+      <div>
+        <div class="lp-name" id="logoPreviewName">Your Airline</div>
+        <div class="lp-tag">FOUNDING FLEET · 0 AIRCRAFT</div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-label"><span class="step-check" data-step="4">4</span>Home hub</div>
+      <div class="setup-sub" style="margin-top:0; margin-bottom:10px;">Only large and extra-large airports (shown in white/gold) can host a hub. Pinch or scroll to zoom, drag to pan.</div>
+      <div id="setupMapOuter">
+        <div id="setupMapWrap">
+          <svg id="setupMapSvg" viewBox="0 0 1120 560"></svg>
+        </div>
+        <div class="map-zoom-controls" style="bottom:12px;">
+          <button class="zoom-btn" onclick="setupMapZoomStep(1)">+</button>
+          <button class="zoom-btn" onclick="setupMapZoomStep(-1)">−</button>
+          <button class="zoom-btn center-btn" onclick="setupMapCenterView()">⌖</button>
+        </div>
+      </div>
+      <div class="home-readout" id="homeReadout">Tap a gold-eligible city on the map to pick your home hub.</div>
+    </div>
+
+    <button class="big-btn" id="launchBtn" disabled>Launch Airline →</button>
+  </div>
+
+  <!-- ============ GAME ============ -->
+  <div id="game" style="display:none; height:100%; display:none; flex-direction:column;">
+    <div id="header">
+      <div class="hdr-left">
+        <div class="hdr-badge" id="hdrBadge">✈️</div>
+        <div>
+          <div class="hdr-name" id="hdrName">Airline</div>
+          <div class="hdr-week" id="hdrWeek">WEEK 1</div>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div class="cash-pill" id="hdrCash">$0</div>
+        <button class="reset-btn" onclick="confirmNewGame()" title="New Game">↺</button>
+      </div>
+    </div>
+
+    <div id="main">
+      <div class="view" id="view-map">
+        <div id="mapWrap">
+          <svg id="mapSvg" viewBox="0 0 1120 560"></svg>
+        </div>
+        <div class="map-zoom-controls">
+          <button class="zoom-btn" onclick="mapZoomStep(1)">+</button>
+          <button class="zoom-btn" onclick="mapZoomStep(-1)">−</button>
+          <button class="zoom-btn center-btn" onclick="mapCenterView()">⌖</button>
+        </div>
+        <div class="map-legend">
+          <div><span class="dotL" style="background:#f2b955;"></span>Hub</div>
+          <div><span class="dotL" style="background:#eef4f8;"></span>Open destination</div>
+          <div><span class="dotL" style="background:#4d6070;"></span>Not opened</div>
+        </div>
+        <div id="dashboardPanel">
+          <button class="dash-toggle" id="dashToggleBtn" onclick="toggleDashboard()">Hide overview ▲</button>
+          <div class="dash-title">WEEKLY REVIEW</div>
+          <div id="dashboardCards"></div>
+        </div>
+      </div>
+
+      <div class="view" id="view-fleet">
+        <div class="section">
+          <div class="section-head">
+            <div><div class="section-title">Fleet</div><div class="section-sub" id="fleetSub">0 aircraft</div></div>
+            <div style="display:flex; gap:6px;">
+              <button class="pill-btn" onclick="openLeaseCatalog()">📋 Lease</button>
+              <button class="pill-btn" onclick="openShop()">+ Buy</button>
+            </div>
+          </div>
+          <div id="fleetList"></div>
+        </div>
+      </div>
+
+      <div class="view" id="view-routes">
+        <div class="section">
+          <div class="section-head">
+            <div><div class="section-title">Routes</div><div class="section-sub" id="routesSub">0 active</div></div>
+            <button class="pill-btn" onclick="openCreateRoute()">+ New Route</button>
+          </div>
+          <div id="routesList"></div>
+        </div>
+      </div>
+
+      <div class="view" id="view-staff">
+        <div class="section">
+          <div class="section-head">
+            <div><div class="section-title">Staff</div><div class="section-sub" id="staffSub">Weekly payroll</div></div>
+          </div>
+          <div class="subtabs" id="staffSubtabs">
+            <button class="subtab-btn active" data-cat="employees" onclick="switchStaffTab('employees')">👥 Employees</button>
+            <button class="subtab-btn" data-cat="managers" onclick="switchStaffTab('managers')">⚙️ Managers</button>
+            <button class="subtab-btn" data-cat="directors" onclick="switchStaffTab('directors')">🎩 Directors</button>
+          </div>
+          <div id="staffContent" style="margin-top:16px;"></div>
+          <div class="section-sub" style="margin-top:12px;">Understaffing reduces revenue on every route until you hire up. Managers add passive multipliers; Directors auto-hire for you but cost a fortune.</div>
+        </div>
+      </div>
+
+      <div class="view" id="view-hubs">
+        <div class="section">
+          <div class="section-head">
+            <div><div class="section-title">Destinations & Hubs</div><div class="section-sub" id="hubsSub">0 opened</div></div>
+          </div>
+          <div id="hubsList"></div>
+        </div>
+      </div>
+
+      <div class="view" id="view-finance">
+        <div class="section">
+          <div class="section-title">Finance</div>
+          <div class="stat-grid" style="margin-top:14px;">
+            <div class="stat-box gold"><div class="sv mono" id="finCash">$0</div><div class="sl">Cash on hand</div></div>
+            <div class="stat-box"><div class="sv mono" id="finWorth">$0</div><div class="sl">Net worth</div></div>
+            <div class="stat-box good"><div class="sv mono" id="finRev">$0</div><div class="sl">Last week revenue</div></div>
+            <div class="stat-box bad"><div class="sv mono" id="finExp">$0</div><div class="sl">Last week expenses</div></div>
+          </div>
+          <div class="section-head" style="margin-top:22px;">
+            <div class="section-title" style="font-size:16px;">Bank</div>
+            <button class="pill-btn" onclick="openBankList()">💳 Borrow</button>
+          </div>
+          <div class="card" id="bankCard"></div>
+          <div class="section-head" style="margin-top:22px;"><div class="section-title" style="font-size:16px;">Weekly log</div></div>
+          <div class="card" id="financeLog" style="padding:6px 16px;"></div>
+        </div>
+      </div>
+
+      <div class="view" id="view-news">
+        <div class="section">
+          <div class="section-title">Press</div>
+          <div class="subtabs" id="pressSubtabs" style="margin-top:14px;">
+            <button class="subtab-btn active" data-cat="headlines" onclick="switchPressTab('headlines')">📰 Headlines</button>
+            <button class="subtab-btn" data-cat="social" onclick="switchPressTab('social')">📱 Social Media</button>
+          </div>
+          <div id="newsFeed" style="margin-top:14px;"></div>
+        </div>
+      </div>
+
+      <div class="view" id="view-hospitality">
+        <div class="section">
+          <div class="section-title">Hospitality</div>
+          <div class="section-sub">Upgrade the onboard product, then decide whether it's a free perk or a paid add-on.</div>
+          <div class="subtabs" id="hospSubtabs">
+            <button class="subtab-btn active" data-cat="food" onclick="switchHospTab('food')">🍽️ Food</button>
+            <button class="subtab-btn" data-cat="equipment" onclick="switchHospTab('equipment')">🧰 Equipment</button>
+            <button class="subtab-btn" data-cat="shopping" onclick="switchHospTab('shopping')">🛍️ Shopping</button>
+          </div>
+          <div id="hospContent" style="margin-top:16px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="advance-bar">
+      <button class="advance-btn" onclick="advanceWeek()">✈ Advance 1 Week</button>
+    </div>
+
+    <div id="nav">
+      <button class="nav-btn active" data-view="map" onclick="switchView('map')"><span class="ni">🗺️</span>Map</button>
+      <button class="nav-btn" data-view="fleet" onclick="switchView('fleet')"><span class="ni">🛩️</span>Fleet</button>
+      <button class="nav-btn" data-view="routes" onclick="switchView('routes')"><span class="ni">〰️</span>Routes</button>
+      <button class="nav-btn" data-view="staff" onclick="switchView('staff')"><span class="ni">👥</span>Staff</button>
+      <button class="nav-btn" data-view="hubs" onclick="switchView('hubs')"><span class="ni">📍</span>Cities</button>
+      <button class="nav-btn" data-view="hospitality" onclick="switchView('hospitality')"><span class="ni">🛎️</span>Hosp.</button>
+      <button class="nav-btn" data-view="news" onclick="switchView('news')"><span class="ni">📰</span>Press</button>
+      <button class="nav-btn" data-view="finance" onclick="switchView('finance')"><span class="ni">💰</span>Finance</button>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="modalBg"><div class="modal" id="modalBody"></div></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============================================================
+   DATA
+============================================================ */
+const CITIES = [
+  {id:'NHV', name:'New Haven',      region:'North America', x:120,y:150, size:'L',  char:'Business'},
+  {id:'PAF', name:'Port Ashford',   region:'North America', x:85, y:235, size:'M',  char:'Commuter'},
+  {id:'LKM', name:'Lakemont',       region:'North America', x:185,y:185, size:'M',  char:'Feeder'},
+  {id:'SNR', name:'Sunridge',       region:'North America', x:140,y:270, size:'S',  char:'Feeder'},
+  {id:'BAY', name:'Baytown Central',region:'North America', x:240,y:215, size:'XL', char:'Business'},
+  {id:'FRP', name:'Frostpine Harbor',region:'North America', x:150,y:75, size:'M',  char:'Tourism'},
+  {id:'SNC', name:'Sandy Cove',     region:'North America', x:120,y:310, size:'S',  char:'Tourism'},
+  {id:'RIV', name:'Rio Verde',      region:'South America', x:260,y:400, size:'L',  char:'Business'},
+  {id:'CAL', name:'Costa Alta',     region:'South America', x:215,y:445, size:'M',  char:'Tourism'},
+  {id:'EMF', name:'Emerald Falls',  region:'South America', x:300,y:460, size:'S',  char:'Feeder'},
+  {id:'NPT', name:'Northport',      region:'Europe',        x:480,y:115, size:'L',  char:'Business'},
+  {id:'RVM', name:'Rivermouth',     region:'Europe',        x:525,y:140, size:'XL', char:'Business'},
+  {id:'ALP', name:'Alpine City',    region:'Europe',        x:505,y:175, size:'M',  char:'Tourism'},
+  {id:'SNH', name:'Sunhaven',       region:'Europe',        x:460,y:195, size:'M',  char:'Tourism'},
+  {id:'PWL', name:'Port Wilhelm',   region:'Europe',        x:440,y:90, size:'M',   char:'Commuter'},
+  {id:'SAG', name:'Sahara Gate',    region:'Africa',        x:520,y:270, size:'M',  char:'Business'},
+  {id:'CPH', name:'Cape Halo',      region:'Africa',        x:505,y:430, size:'M',  char:'Tourism'},
+  {id:'ZDC', name:'Zanadu Coast',   region:'Africa',        x:570,y:320, size:'S',  char:'Feeder'},
+  {id:'KLJ', name:'Kalahari Junction',region:'Africa',      x:480,y:390, size:'S',  char:'Feeder'},
+  {id:'EBR', name:'Eastbridge',     region:'Asia',          x:760,y:180, size:'XL', char:'Business'},
+  {id:'HBV', name:'Harborview',     region:'Asia',          x:825,y:220, size:'L',  char:'Business'},
+  {id:'SLK', name:'Silk Point',     region:'Asia',          x:700,y:235, size:'M',  char:'Commuter'},
+  {id:'SPM', name:'Spice Market',   region:'Asia',          x:760,y:285, size:'M',  char:'Tourism'},
+  {id:'MSB', name:'Monsoon Bay',    region:'Asia',          x:725,y:325, size:'M',  char:'Feeder'},
+  {id:'JDH', name:'Jade Harbor',    region:'Asia',          x:830,y:150, size:'M',  char:'Tourism'},
+  {id:'HLP', name:'Highland Pass',  region:'Asia',          x:650,y:170, size:'S',  char:'Feeder'},
+  {id:'CRF', name:'Coral Reach',    region:'Oceania',       x:870,y:420, size:'M',  char:'Tourism'},
+  {id:'SCR', name:'Southern Cross', region:'Oceania',       x:900,y:465, size:'L',  char:'Business'},
+  {id:'PLA', name:'Palm Atoll',     region:'Oceania',       x:930,y:380, size:'S',  char:'Tourism'},
+  {id:'KWB', name:'Kiwi Bay',       region:'Oceania',       x:895,y:493, size:'S',  char:'Tourism'},
+  {id:'CDR', name:'Cedar Ridge',    region:'North America', x:200,y:110, size:'M',  char:'Commuter'},
+  {id:'GLP', name:'Gulf Point',     region:'North America', x:145,y:300, size:'S',  char:'Feeder'},
+  {id:'SRN', name:'Sierra Nueva',   region:'South America', x:250,y:470, size:'S',  char:'Feeder'},
+  {id:'ISB', name:'Isla Blanca',    region:'Europe',        x:602,y:225, size:'S',  char:'Tourism'},
+  {id:'NLC', name:'Nile Crossing',  region:'Africa',        x:545,y:250, size:'S',  char:'Feeder'},
+  {id:'STL', name:'Steppe Landing', region:'Asia',          x:630,y:120, size:'S',  char:'Commuter'},
+  {id:'BBC', name:'Bamboo Coast',   region:'Asia',          x:770,y:340, size:'S',  char:'Tourism'},
+  {id:'CCG', name:'Coconut Grove',  region:'Oceania',       x:953,y:440, size:'S',  char:'Tourism'},
+  {id:'PPH', name:'Pearl Harbor Bay',region:'Pacific',       x:1000,y:150, size:'M', char:'Business'},
+  {id:'WKA', name:'Wake Atoll',     region:'Pacific',       x:1050,y:110, size:'S',  char:'Feeder'},
+  {id:'MDW', name:'Midway Landing', region:'Pacific',       x:1080,y:180, size:'S',  char:'Feeder'},
+  {id:'GUM', name:'Guam Point',     region:'Pacific',       x:1000,y:260, size:'M',  char:'Business'},
+  {id:'SAI', name:'Saipan Shores',  region:'Pacific',       x:1050,y:250, size:'S',  char:'Tourism'},
+  {id:'FIJ', name:'Fiji Junction',  region:'Pacific',       x:1020,y:340, size:'M',  char:'Tourism'},
+  {id:'TAH', name:'Tahiti Bay',     region:'Pacific',       x:1080,y:380, size:'M',  char:'Tourism'},
+  {id:'MSH', name:'Marshall Reach', region:'Pacific',       x:970,y:200, size:'S',   char:'Feeder'},
+];
+const SIZE_MULT = {S:0.6, M:1, L:1.6, XL:2.4};
+const SIZE_RANK = {S:0, M:1, L:2, XL:3};
+const SIZE_FULL = {S:'Small', M:'Medium', L:'Large', XL:'Extra Large'};
+const CHAR_INFO = {
+  Business: {icon:'💼', demandMult:1.15, priceTolerance:1.25, desc:'High-yield corporate travel. Tolerates higher fares.'},
+  Tourism:  {icon:'🏖️', demandMult:1.10, priceTolerance:0.85, desc:'Leisure traffic. Books more when fares are attractive.'},
+  Commuter: {icon:'🚌', demandMult:1.00, priceTolerance:0.90, desc:'Frequent short-hop flyers, fare-sensitive.'},
+  Feeder:   {icon:'🔗', demandMult:0.80, priceTolerance:1.00, desc:'Small local traffic that feeds into bigger hubs.'},
+};
+const MILE_PER_UNIT = 11.5;
+
+const AIRCRAFT_TYPES = [
+  {key:'hopper', name:'Hopper 19', icon:'🛧', category:'Turboprop', cost:2000000, range:500, speed:300, capacity:19, sizeClass:'S', fuel:1.4, maint:2500, desc:'Tiny commuter hopper. Flies into the smallest airfields.'},
+  {key:'propliner', name:'Prop Liner 34', icon:'🛧', category:'Turboprop', cost:4200000, range:700, speed:320, capacity:34, sizeClass:'S', fuel:1.9, maint:3200, desc:'Classic prop workhorse for short regional hops.'},
+  {key:'falcon', name:'Falcon Regional', icon:'🛩️', category:'Regional Jet', cost:6000000, range:1200, speed:380, capacity:70, sizeClass:'S', fuel:3.2, maint:5000, desc:'Cheap, short-hop workhorse for feeder routes.'},
+  {key:'propmax', name:'Prop Max 78', icon:'🛧', category:'Turboprop', cost:9500000, range:1000, speed:350, capacity:78, sizeClass:'M', fuel:3.6, maint:6000, desc:'The largest turboprop in the sky — sips fuel on medium hops.'},
+  {key:'kestrel', name:'Kestrel 100', icon:'🛩️', category:'Regional Jet', cost:16000000, range:1900, speed:430, capacity:100, sizeClass:'M', fuel:4.8, maint:8500, desc:'Bridges regional and mainline flying.'},
+  {key:'aerostar', name:'Aerostar 85', icon:'🛩️', category:'Regional Jet', cost:22000000, range:2000, speed:440, capacity:85, sizeClass:'M', fuel:5.2, maint:9000, desc:'A stretched regional jet bridging into mainline routes.'},
+  {key:'comet', name:'Comet Narrowbody', icon:'✈️', category:'Narrowbody', cost:42000000, range:3400, speed:480, capacity:165, sizeClass:'M', fuel:8, maint:14000, desc:'The backbone of any mid-size network.'},
+  {key:'cometxl', name:'Comet XL', icon:'✈️', category:'Narrowbody', cost:68000000, range:4200, speed:500, capacity:210, sizeClass:'L', fuel:10.5, maint:19000, desc:'Stretched narrowbody built for busy trunk routes.'},
+  {key:'voyager', name:'Voyager Widebody', icon:'🛫', category:'Widebody', cost:140000000, range:7800, speed:540, capacity:320, sizeClass:'L', fuel:18, maint:35000, desc:'Long-haul intercontinental hauler.'},
+  {key:'voyagerultra', name:'Voyager Ultra', icon:'🛫', category:'Widebody', cost:190000000, range:8800, speed:545, capacity:390, sizeClass:'XL', fuel:24, maint:45000, desc:'Ultra-long-range widebody for flagship routes.'},
+  {key:'titan', name:'Titan Superjumbo', icon:'🛬', category:'Jumbo', cost:230000000, range:8600, speed:555, capacity:480, sizeClass:'XL', fuel:27, maint:55000, desc:'The flagship. Maximum capacity, maximum prestige.'},
+  {key:'alpine42', name:'Alpine Turboprop 42', icon:'🛧', category:'Turboprop', cost:7000000, range:800, speed:330, capacity:42, sizeClass:'S', fuel:2.1, maint:3800, desc:'Rugged turboprop built for short strips and tricky terrain.'},
+  {key:'envoy', name:'Falcon Envoy 12', icon:'🛩️', category:'Business Jet', cost:35000000, range:6000, speed:560, capacity:12, sizeClass:'S', fuel:9, maint:12000, desc:'Ultra-long-range VIP jet. Tiny cabin, huge reach.'},
+  {key:'jetlite', name:'JetLite 140', icon:'✈️', category:'Narrowbody', cost:50000000, range:2800, speed:490, capacity:140, sizeClass:'M', fuel:8.8, maint:15000, desc:'Efficient narrowbody tuned for short-to-medium trunk routes.'},
+  {key:'shuttle220', name:'Metro Shuttle 220', icon:'✈️', category:'High-Density Shuttle', cost:55000000, range:1200, speed:470, capacity:220, sizeClass:'M', fuel:11, maint:16000, desc:'Packed-tight shuttle built for short, high-volume corridors.'},
+  {key:'pacific260', name:'Pacific Voyager 260', icon:'🛫', category:'Widebody', cost:165000000, range:9500, speed:545, capacity:260, sizeClass:'L', fuel:20, maint:38000, desc:'Ultra-long-range widebody with a thinner cabin for maximum range over open ocean.'},
+  {key:'globeliner', name:'Globeliner 560', icon:'🛬', category:'Jumbo', cost:260000000, range:7900, speed:550, capacity:560, sizeClass:'XL', fuel:30, maint:62000, desc:'Maximum-density jumbo for your busiest trunk routes.'},
+];
+/* Leasing catalog — aircraft available from other airlines, often already worn */
+const LEASE_CATALOG = [
+  {id:'lease1', typeKey:'hopper', condition:68, weeklyCost:2500},
+  {id:'lease2', typeKey:'hopper', condition:75, weeklyCost:2500},
+  {id:'lease3', typeKey:'hopper', condition:42, weeklyCost:2000},
+  {id:'lease4', typeKey:'propliner', condition:34, weeklyCost:5000},
+  {id:'lease5', typeKey:'propliner', condition:85, weeklyCost:6500},
+  {id:'lease6', typeKey:'propliner', condition:65, weeklyCost:6000},
+  {id:'lease7', typeKey:'falcon', condition:29, weeklyCost:6500},
+  {id:'lease8', typeKey:'falcon', condition:42, weeklyCost:8500},
+  {id:'lease9', typeKey:'falcon', condition:68, weeklyCost:9500},
+  {id:'lease10', typeKey:'propmax', condition:73, weeklyCost:15500},
+  {id:'lease11', typeKey:'propmax', condition:62, weeklyCost:13500},
+  {id:'lease12', typeKey:'kestrel', condition:56, weeklyCost:25000},
+  {id:'lease13', typeKey:'kestrel', condition:79, weeklyCost:30000},
+  {id:'lease14', typeKey:'aerostar', condition:76, weeklyCost:39500},
+  {id:'lease15', typeKey:'aerostar', condition:50, weeklyCost:24000},
+  {id:'lease16', typeKey:'comet', condition:45, weeklyCost:49000},
+  {id:'lease17', typeKey:'comet', condition:76, weeklyCost:58000},
+  {id:'lease18', typeKey:'cometxl', condition:33, weeklyCost:68000},
+  {id:'lease19', typeKey:'cometxl', condition:60, weeklyCost:90000},
+  {id:'lease20', typeKey:'voyager', condition:66, weeklyCost:182000},
+  {id:'lease21', typeKey:'voyager', condition:35, weeklyCost:140000},
+  {id:'lease22', typeKey:'voyagerultra', condition:62, weeklyCost:222500},
+  {id:'lease23', typeKey:'titan', condition:52, weeklyCost:256000},
+  {id:'lease24', typeKey:'alpine42', condition:46, weeklyCost:10000},
+  {id:'lease25', typeKey:'alpine42', condition:70, weeklyCost:13000},
+  {id:'lease26', typeKey:'envoy', condition:51, weeklyCost:54000},
+  {id:'lease27', typeKey:'jetlite', condition:65, weeklyCost:58000},
+  {id:'lease28', typeKey:'jetlite', condition:80, weeklyCost:64000},
+  {id:'lease29', typeKey:'shuttle220', condition:46, weeklyCost:71500},
+  {id:'lease30', typeKey:'shuttle220', condition:82, weeklyCost:95000},
+  {id:'lease31', typeKey:'pacific260', condition:34, weeklyCost:175000},
+  {id:'lease32', typeKey:'globeliner', condition:57, weeklyCost:310000},
+];
+const LEASE_MIN_WEEKS=1, LEASE_MAX_WEEKS=50;
+function leaseSigningFee(weeklyCost){ return Math.round(weeklyCost*2); } // 2-week deposit, regardless of chosen term
+function leaseRenewalFee(weeklyCost, extraWeeks, renewalNumber){
+  const base=Math.round(weeklyCost*extraWeeks);
+  const surcharge=Math.floor(renewalNumber/3)*1000000;
+  return {base, surcharge, total:base+surcharge};
+}
+function conditionBar(condition){
+  const color = condition>=70? 'var(--cyan)' : (condition>=40? 'var(--gold)' : 'var(--red)');
+  return `<div style="margin-top:8px;">
+    <div style="display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:9px; color:var(--slate); margin-bottom:3px;"><span>CONDITION</span><span>${Math.round(condition)}%</span></div>
+    <div style="background:var(--navy); border-radius:6px; height:6px; overflow:hidden;"><div style="background:${color}; height:100%; width:${condition}%;"></div></div>
+  </div>`;
+}
+
+/* Bank / loan constants */
+const BANK_BASE_CREDIT = 3000000;
+const BANK_CREDIT_PER_CONFIDENCE = 250000;
+const BANKS = [
+  {key:'horizon', name:'Horizon Bank', icon:'🏦', tagline:'Our preferred banking partner. Fast approvals, solid limits.', approvalWeeks:0, limitMult:1.0, baseRate:0.08, rateSlope:-0.0006, minScore:30},
+  {key:'commerce', name:'Commerce Bank', icon:'🏛️', tagline:'Lightning-fast approvals, but they keep limits tight.', approvalWeeks:0, limitMult:0.45, baseRate:0.06, rateSlope:-0.0004, minScore:15},
+  {key:'continental', name:'Continental Trust', icon:'🏢', tagline:'A full week of underwriting — but the highest limits and best rates, if you qualify.', approvalWeeks:1, limitMult:1.8, baseRate:0.05, rateSlope:-0.0009, minScore:55},
+  {key:'sunrise', name:'Sunrise Credit', icon:'🌅', tagline:'Approves almost anyone. Interest reflects the risk.', approvalWeeks:0, limitMult:0.7, baseRate:0.17, rateSlope:-0.0003, minScore:0},
+];
+function bankByKey(k){ return BANKS.find(b=>b.key===k); }
+function creditLimitFor(bank){ return Math.round((BANK_BASE_CREDIT + S.credit.score*BANK_CREDIT_PER_CONFIDENCE)*bank.limitMult); }
+function loanRateFor(bank){
+  let r=Math.max(0.02, bank.baseRate + bank.rateSlope*S.credit.score);
+  if(S.directors && S.directors.has('finance')) r=Math.max(0.01, r-0.02);
+  return r;
+}
+function avgRecentNet(){
+  const recent=S.log.slice(-4);
+  if(recent.length===0) return 0;
+  return recent.reduce((s,l)=>s+l.net,0)/recent.length;
+}
+function evaluateLoanApplication(bank, amount, termWeeks){
+  if(S.loan) return {approved:false, reason:'You already have an active loan. Pay it off before applying for another.'};
+  if(S.credit.score<bank.minScore) return {approved:false, reason:`${bank.name} requires a credit score of at least ${bank.minScore}. Yours is ${S.credit.score}.`};
+  const limit=creditLimitFor(bank);
+  if(amount>limit) return {approved:false, reason:`Requested amount exceeds ${bank.name}'s limit of ${fmtMoney(limit)} for your credit profile.`};
+  if(amount<=0) return {approved:false, reason:'Choose an amount greater than $0.'};
+  const avgNet=avgRecentNet();
+  if(avgNet<0 && S.cash<amount*0.3) return {approved:false, reason:'Your recent finances look too unstable to support this loan right now.'};
+  return {approved:true, reason:''};
+}
+
+/* Hospitality: food — either subscribe to a catering company, or stock your own items */
+const CATERING_COMPANIES = [
+  {key:'skybite', name:'SkyBite Express', costPerPax:2, satisfaction:0.12, icon:'🥪', desc:'Cheap, cheerful, reliable. No stock to manage.'},
+  {key:'goldenfork', name:'Golden Fork Airlines Catering', costPerPax:6, satisfaction:0.25, icon:'🍱', desc:'Solid mid-market meal service.'},
+  {key:'nimbus', name:'Nimbus Gourmet', costPerPax:12, satisfaction:0.35, icon:'🍝', desc:'Premium ingredients, consistently well reviewed.'},
+  {key:'celestial', name:'Celestial Table', costPerPax:20, satisfaction:0.45, icon:'🥂', desc:'The best catering money can buy.'},
+];
+const FOOD_ITEMS = [
+  {key:'snackbox', name:'Snack Boxes', unitCost:1.2, satisfaction:0.10, icon:'🥨', desc:'Bulk-bought snack packs. Cheap per unit, needs restocking often.'},
+  {key:'hotmeal', name:'Hot Meal Trays', unitCost:5, satisfaction:0.24, icon:'🍛', desc:'Pre-made hot meals, stocked at the galley.'},
+  {key:'premiumkit', name:'Premium Meal Kits', unitCost:11, satisfaction:0.38, icon:'🍽️', desc:'Restaurant-quality kits — expensive to stock, big satisfaction payoff.'},
+];
+/* Hospitality: one-time equipment purchases */
+const EQUIPMENT_ITEMS = [
+  {key:'uniforms', name:'Staff Uniforms & Gloves', cost:150000, satisfaction:0.06, icon:'🧤', desc:'Basic presentable, hygienic crew.'},
+  {key:'trays', name:'Service Trays & Carts', cost:600000, satisfaction:0.10, icon:'🍽️', desc:'Faster, smoother cabin service.'},
+  {key:'galley', name:'Galley Upgrade', cost:2500000, satisfaction:0.14, icon:'🍳', desc:'Better storage and prep space for hot meals.'},
+  {key:'emergency', name:'Emergency Equipment Upgrade', cost:5000000, satisfaction:0.20, icon:'🦺', desc:'Modern safety gear passengers notice and trust.'},
+];
+/* Hospitality: in-flight retail */
+const SHOP_ITEMS = [
+  {key:'fragrance', name:'Fragrances', icon:'🧴', unitCost:8, basePrice:35, investCost:400000, demandBase:0.05, desc:'Duty-free perfume and cologne.'},
+  {key:'souvenir', name:'Souvenirs', icon:'🎁', unitCost:5, basePrice:18, investCost:250000, demandBase:0.09, desc:'Branded merchandise passengers love.'},
+  {key:'snacks', name:'Duty-Free Snacks', icon:'🍫', unitCost:2, basePrice:9, investCost:150000, demandBase:0.14, desc:'Chocolate, chips, the impulse-buy shelf.'},
+  {key:'electronics', name:'Travel Electronics', icon:'🎧', unitCost:25, basePrice:70, investCost:700000, demandBase:0.02, desc:'Headphones, chargers, travel gadgets.'},
+];
+let hospTab='food';
+
+/* Staff: rank-and-file employee roles */
+const EMPLOYEE_ROLES = [
+  {key:'pilots', label:'Pilots', icon:'🧑\u200d✈️', salary:2500, req:(n,h,o,rt)=>n*4},
+  {key:'cabin', label:'Cabin Crew', icon:'🧑\u200d💼', salary:1200, req:(n,h,o,rt)=>n*6},
+  {key:'mech', label:'Mechanics', icon:'🔧', salary:1800, req:(n,h,o,rt)=>n*2+h*3},
+  {key:'ground', label:'Ground Staff', icon:'🧳', salary:900, req:(n,h,o,rt)=>h*10+o*3},
+  {key:'social', label:'Social Media Admin', icon:'📱', salary:1400, req:(n,h,o,rt)=>Math.ceil(o/4)},
+  {key:'support', label:'Customer Support', icon:'🎧', salary:1100, req:(n,h,o,rt)=>Math.ceil(rt*1.5)},
+  {key:'dispatch', label:'Dispatchers', icon:'🗂️', salary:1600, req:(n,h,o,rt)=>Math.ceil(n*1.5)},
+];
+/* Staff: managers — passive multipliers */
+const MANAGER_ROLES = [
+  {key:'ops', name:'Operations Manager', icon:'⚙️', cost:3000000, salary:4000, effect:'Cuts fleet-wide fuel burn by 8%.'},
+  {key:'crew', name:'Crew Manager', icon:'🧑\u200d🏫', cost:2500000, salary:3500, effect:'Raises the minimum staffing efficiency floor from 55% to 65%.'},
+  {key:'hospitality', name:'Hospitality Manager', icon:'🛎️', cost:2000000, salary:3000, effect:'Automatically restocks in-flight shop concessions and self-stocked food every week.',
+    configurable:{label:'Restock target', min:50, max:1000, step:50, unit:' units', default:300}},
+  {key:'marketing', name:'Marketing Manager', icon:'📣', cost:3500000, salary:4500, effect:'Boosts passenger demand fleet-wide by 10%.'},
+  {key:'maintenance', name:'Maintenance Manager', icon:'🛠️', cost:4000000, salary:5000, effect:'Automatically services any aircraft below its service threshold every week.',
+    configurable:{label:'Service threshold', min:10, max:95, step:5, unit:'%', default:60}},
+  {key:'negotiations', name:'Negotiations Manager', icon:'🤝', cost:3200000, salary:4200, effect:'Automatically renews every eligible lease by a fixed length the moment it qualifies for renewal.',
+    configurable:{label:'Renewal length', min:LEASE_MIN_WEEKS, max:LEASE_MAX_WEEKS, step:1, unit:' weeks', default:12}},
+];
+/* Staff: directors — auto-hire + big multipliers, very expensive */
+const DIRECTOR_ROLES = [
+  {key:'operations', name:'Director of Operations', icon:'🎩', cost:25000000, salary:20000, effect:'Auto-hires every understaffed role to 100% each week and pushes fuel efficiency further (stacks with Ops Manager).'},
+  {key:'commercial', name:'Director of Commercial', icon:'💹', cost:30000000, salary:25000, effect:'Boosts passenger demand fleet-wide by 25% (stacks with Marketing Manager).'},
+  {key:'finance', name:'Director of Finance', icon:'🏦', cost:28000000, salary:22000, effect:'Cuts your bank loan interest rate by 2 percentage points.'},
+];
+let staffTab='employees';
+function opsFuelMult(){ let m=1; if(S.managers.has('ops')) m*=0.92; if(S.directors.has('operations')) m*=0.85; return m; }
+function marketingDemandMult(){ let m=1; if(S.managers.has('marketing')) m*=1.10; if(S.directors.has('commercial')) m*=1.25; return m; }
+function crewFloor(){ if(S.directors.has('operations')) return 1.0; if(S.managers.has('crew')) return 0.65; return 0.55; }
+
+/* Low-poly landmass paths (SVG path 'd' strings) for the map, viewBox 1000x560 */
+const LANDMASSES = {
+  'North America': "M60,60 L170,40 L230,75 L260,130 L235,160 L270,200 L250,260 L210,300 L160,335 L100,340 L55,300 L30,220 L35,140 Z",
+  'South America': "M230,330 L290,320 L330,360 L320,420 L300,480 L270,540 L230,545 L195,500 L185,430 L195,370 Z",
+  'Europe': "M410,95 L450,60 L510,55 L560,70 L590,100 L580,140 L600,170 L560,200 L510,220 L460,215 L420,180 L400,140 Z",
+  'Africa': "M465,215 L540,205 L590,240 L610,300 L595,360 L580,420 L555,480 L510,500 L470,480 L450,420 L445,340 L450,270 Z",
+  'Asia': "M600,140 L650,90 L740,75 L830,90 L900,110 L940,150 L920,200 L940,240 L900,280 L860,320 L800,350 L740,340 L690,320 L650,280 L615,230 L600,180 Z",
+  'Oceania A': "M905,360 L940,350 L965,375 L960,405 L930,415 L905,395 Z",
+  'Oceania B': "M830,390 L880,370 L920,390 L935,430 L920,470 L890,500 L850,505 L815,480 L800,440 L810,405 Z",
+  'Oceania C': "M935,415 L965,420 L975,445 L960,465 L935,460 L925,440 Z",
+  'Isla Blanca Isle': "M590,205 L620,200 L630,225 L615,245 L590,240 L580,220 Z",
+  'Pacific A': "M960,140 L1010,130 L1030,160 L1015,200 L975,210 L950,180 Z",
+  'Pacific B': "M1030,100 L1075,85 L1100,115 L1090,160 L1060,190 L1025,165 L1020,130 Z",
+  'Pacific C': "M985,235 L1030,225 L1065,245 L1060,280 L1015,290 L980,270 Z",
+  'Pacific D': "M995,320 L1040,310 L1075,330 L1090,360 L1075,395 L1030,405 L995,385 L985,350 Z",
+};
+
+
+const LOGO_COLORS = [
+  '#f2b955','#39d6c8','#ec6a5e','#7c93a8','#a06cf2','#5ecb6a','#f27ab0','#5ba8f2',
+  '#d9414e','#2f8f5b','#1c5fae','#e08a2e','#7a4ec7','#2fa39b','#c74b6b','#8aa83f',
+  '#4a4e8f','#d6c23a','#3e9bd1','#b55a2e',
+];
+const LOGO_ICONS = ['✈️','🛫','🛬','🦅','🌍','⭐','🔥','💎','🚀','🌊','🛰️','🐦'];
+
+/* ============================================================
+   STATE
+============================================================ */
+let cfg = {name:'', color:LOGO_COLORS[0], icon:LOGO_ICONS[0], home:null};
+let S = null; // game state, created on launch
+let currentView = 'map';
+
+function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y)*MILE_PER_UNIT; }
+function cityById(id){ return CITIES.find(c=>c.id===id); }
+function fmtMoney(n){
+  const neg = n<0; n=Math.abs(Math.round(n));
+  let s = '$'+n.toLocaleString('en-US');
+  return neg? '-'+s : s;
+}
+function openCost(city){ return Math.round(25000 + SIZE_MULT[city.size]*30000); }
+function hubCost(city){ return Math.round(300000 + SIZE_MULT[city.size]*150000); }
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function sizeBar(sizeClass){
+  const order=['S','M','L','XL'];
+  const activeIdx=order.indexOf(sizeClass);
+  return `<div class="size-bar">${order.map((s,i)=>`<div class="size-seg ${i<=activeIdx?'on':''} ${i===activeIdx?'cur':''}">${s}</div>`).join('')}</div>`;
+}
+function fitsAirport(aircraftSizeClass, city){
+  return SIZE_RANK[city.size] >= SIZE_RANK[aircraftSizeClass];
+}
+function routeFit(type, a, b){
+  const okA=fitsAirport(type.sizeClass,a), okB=fitsAirport(type.sizeClass,b);
+  return {ok: okA&&okB, reason: !okA? `${a.name}'s airport is too small`: (!okB? `${b.name}'s airport is too small` : '')};
+}
+
+/* ============================================================
+   SETUP SCREEN
+============================================================ */
+function buildSetup(){
+  const cs=document.getElementById('colorSwatches');
+  cs.innerHTML='';
+  LOGO_COLORS.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='swatch'+(c===cfg.color?' sel':'');
+    d.style.background=c;
+    d.onclick=()=>{cfg.color=c; buildSetup(); };
+    cs.appendChild(d);
+  });
+  const is=document.getElementById('iconSwatches');
+  is.innerHTML='';
+  LOGO_ICONS.forEach(ic=>{
+    const b=document.createElement('div');
+    b.className='icon-btn'+(ic===cfg.icon?' sel':'');
+    b.textContent=ic;
+    b.onclick=()=>{cfg.icon=ic; buildSetup();};
+    is.appendChild(b);
+  });
+  document.getElementById('logoPreviewBadge').textContent=cfg.icon;
+  document.getElementById('logoPreviewBadge').style.background=cfg.color;
+  document.getElementById('logoPreviewStripe').style.background=cfg.color;
+  document.getElementById('logoPreviewName').textContent=cfg.name||'Your Airline';
+
+  renderSetupMap();
+  const readout=document.getElementById('homeReadout');
+  if(cfg.home){
+    const c=cityById(cfg.home);
+    readout.innerHTML=`<span style="color:var(--gold);">✓ ${c.name}</span> — ${c.region} · ${CHAR_INFO[c.char].icon} ${c.char}`;
+  } else {
+    readout.textContent='Tap a gold-eligible city on the map to pick your home hub.';
+  }
+
+  document.querySelectorAll('.step-check').forEach(el=>{
+    const step=el.dataset.step;
+    let done=false;
+    if(step==='1') done=cfg.name.trim().length>0;
+    if(step==='2') done=true; // color always has a default
+    if(step==='3') done=true; // emblem always has a default
+    if(step==='4') done=!!cfg.home;
+    el.classList.toggle('done', done);
+  });
+
+  document.getElementById('launchBtn').disabled = !(cfg.name.trim().length>0 && cfg.home);
+}
+document.getElementById('nameInput').addEventListener('input',e=>{
+  cfg.name=e.target.value; buildSetup();
+});
+document.getElementById('launchBtn').addEventListener('click', launchAirline);
+buildSetup();
+
+function launchAirline(){
+  const home = cityById(cfg.home);
+  S = {
+    name: cfg.name.trim(), color: cfg.color, icon: cfg.icon,
+    cash: 12000000, week: 1,
+    opened: new Set([home.id]),
+    hubs: new Set([home.id]),
+    fleet: [], // {id,type,assignedRouteId,condition,leased,leaseId,weeklyLeaseCost,leaseWeeksLeft}
+    leasedTaken: new Set(),
+    routes: [], // {id,from,to,aircraftId,price}
+    staff: {pilots:0, cabin:0, mech:0, ground:0, social:0, support:0, dispatch:0},
+    managers: new Set(),
+    managerSettings: Object.fromEntries(MANAGER_ROLES.filter(m=>m.configurable).map(m=>[m.key, m.configurable.default])),
+    directors: new Set(),
+    credit: {score:50},
+    loan: null, // {bankKey, principal, balance, rate, termWeeks, weeksLeft}
+    pendingLoan: null, // {bankKey, amount, termWeeks, resolveWeek}
+    hospitality: {
+      foodMode:'catering', cateringCompany:'skybite', foodPrice:0,
+      selfStock:{itemKey:'hotmeal', stock:0}, lastFoodSatisfaction:0.12,
+      equipment: new Set(),
+      shop: {
+        fragrance:{invested:false, stock:0, price:35},
+        souvenir:{invested:false, stock:0, price:18},
+        snacks:{invested:false, stock:0, price:9},
+        electronics:{invested:false, stock:0, price:70},
+      }
+    },
+    rating: 3.0,
+    feedback: [], // {week, type:'headline'|'comment', text}
+    log: [], // {week, revenue, expense, net}
+    nextId: 1,
+  };
+  document.getElementById('setup').style.display='none';
+  const g=document.getElementById('game');
+  g.style.display='flex';
+  document.getElementById('hdrBadge').textContent=S.icon;
+  document.getElementById('hdrBadge').style.background=S.color;
+  document.getElementById('hdrName').textContent=S.name;
+  toast(`${home.name} established as home hub`);
+  pushFeedback('headline', `${S.name} takes off: new carrier launches operations out of ${home.name}.`);
+  renderAll();
+  mapCenterView();
+}
+
+/* ============================================================
+   NAV / VIEW SWITCH
+============================================================ */
+function switchView(v){
+  currentView=v;
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+  renderAll();
+  if(v==='map') initMapView();
+}
+
+/* ============================================================
+   RENDER ALL
+============================================================ */
+function renderAll(){
+  if(!S) return;
+  document.getElementById('hdrWeek').textContent='WEEK '+S.week;
+  const cashEl=document.getElementById('hdrCash');
+  cashEl.textContent=fmtMoney(S.cash);
+  cashEl.classList.toggle('neg', S.cash<0);
+
+  renderMap();
+  renderDashboard();
+  renderFleet();
+  renderRoutes();
+  renderStaff();
+  renderHubs();
+  renderFinance();
+  renderHospitality();
+  renderNews();
+}
+
+/* ---------------- MAP ---------------- */
+let dashboardVisible=true;
+function toggleDashboard(){
+  dashboardVisible=!dashboardVisible;
+  document.getElementById('dashboardPanel').classList.toggle('hidden', !dashboardVisible);
+  document.getElementById('dashToggleBtn').textContent=dashboardVisible?'Hide overview ▲':'Show overview ▼';
+}
+function renderDashboard(){
+  const el=document.getElementById('dashboardCards');
+  if(!el) return;
+  const last=S.log[S.log.length-1];
+  if(!last){
+    el.innerHTML=`<div class="dash-card" style="grid-column:1/-1;"><div class="dv" style="font-size:13px; color:var(--slate);">No flights yet</div><div class="dl">Advance a week to see stats</div></div>`;
+    return;
+  }
+  const satisfaction=Math.round(hospitalitySatisfaction()*100);
+  el.innerHTML=`
+    <div class="dash-card ${last.net>=0?'good':'bad'}" style="grid-column:1/-1;"><div class="dv">${fmtMoney(last.net)}</div><div class="dl">Week ${last.week} profit/loss</div></div>
+    <div class="dash-card gold"><div class="dv">${starString(S.rating)} ${S.rating.toFixed(1)}</div><div class="dl">Airline rating</div></div>
+    <div class="dash-card"><div class="dv">${satisfaction}%</div><div class="dl">Customer satisfaction</div></div>
+    <div class="dash-card"><div class="dv">${Math.round(last.totalPax).toLocaleString()}</div><div class="dl">Passengers carried</div></div>
+    <div class="dash-card"><div class="dv">${Math.round((last.avgLoad||0)*100)}%</div><div class="dl">Average load factor</div></div>
+    <div class="dash-card" style="grid-column:1/-1;"><div class="dv">${S.fleet.length} / ${S.routes.length}</div><div class="dl">Aircraft / active routes</div></div>
+  `;
+}
+/* ---------------- MAP PAN/ZOOM (reusable factory — supports multiple independent map instances) ---------------- */
+const MAP_W=1120, MAP_H=560;
+function createPannableMap(wrapId, svgId, maxZoomMult){
+  maxZoomMult=maxZoomMult||4;
+  const state={scale:1, x:0, y:0, minScale:1, maxScale:4, initialized:false, suppressClick:false};
+  function computeFitScale(){
+    const wrap=document.getElementById(wrapId);
+    if(!wrap || !wrap.clientWidth) return 1;
+    return Math.max(wrap.clientWidth/MAP_W, wrap.clientHeight/MAP_H);
+  }
+  function clampPan(){
+    const wrap=document.getElementById(wrapId);
+    const w=wrap.clientWidth, h=wrap.clientHeight;
+    const mapW=MAP_W*state.scale, mapH=MAP_H*state.scale;
+    const minX=Math.min(0, w-mapW), maxX=0;
+    const minY=Math.min(0, h-mapH), maxY=0;
+    state.x=Math.max(minX, Math.min(maxX, state.x));
+    state.y=Math.max(minY, Math.min(maxY, state.y));
+  }
+  function applyTransform(){
+    const svg=document.getElementById(svgId);
+    if(!svg) return;
+    svg.style.transform=`translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+  }
+  function init(centerCity){
+    const fit=computeFitScale();
+    if(fit<=0) return;
+    state.minScale=fit;
+    state.maxScale=fit*maxZoomMult;
+    if(!state.initialized){
+      const wrap=document.getElementById(wrapId);
+      const w=wrap.clientWidth, h=wrap.clientHeight;
+      state.scale=Math.min(state.maxScale, fit*1.5);
+      let cx=MAP_W/2, cy=MAP_H/2;
+      if(centerCity){ cx=centerCity.x; cy=centerCity.y; }
+      state.x=w/2-cx*state.scale;
+      state.y=h/2-cy*state.scale;
+      state.initialized=true;
+    } else {
+      state.scale=Math.max(state.minScale, Math.min(state.maxScale, state.scale));
+    }
+    clampPan();
+    applyTransform();
+  }
+  function recenter(centerCity){
+    state.initialized=false;
+    init(centerCity);
+  }
+  function zoomStep(dir){
+    const wrap=document.getElementById(wrapId);
+    zoomAt(wrap.clientWidth/2, wrap.clientHeight/2, dir>0?1.3:1/1.3);
+  }
+  function zoomAt(screenX, screenY, factor){
+    const oldScale=state.scale;
+    let newScale=oldScale*factor;
+    newScale=Math.max(state.minScale, Math.min(state.maxScale, newScale));
+    if(newScale===oldScale) return;
+    const mapPtX=(screenX-state.x)/oldScale;
+    const mapPtY=(screenY-state.y)/oldScale;
+    state.scale=newScale;
+    state.x=screenX-mapPtX*newScale;
+    state.y=screenY-mapPtY*newScale;
+    clampPan();
+    applyTransform();
+  }
+  (function bindGestures(){
+    let pointers={};
+    let dragLast=null;
+    let dragDistance=0;
+    let pinchStartDist=0;
+    let pinchStartScale=1;
+    function dist(p1,p2){ return Math.hypot(p1.x-p2.x, p1.y-p2.y); }
+    function bind(){
+      const wrap=document.getElementById(wrapId);
+      if(!wrap || wrap._gesturesBound) return;
+      wrap._gesturesBound=true;
+      wrap.addEventListener('pointerdown', e=>{
+        pointers[e.pointerId]={x:e.clientX, y:e.clientY};
+        const ids=Object.keys(pointers);
+        if(ids.length===1){
+          dragLast={x:e.clientX, y:e.clientY};
+          dragDistance=0;
+          wrap.classList.add('dragging');
+        } else if(ids.length===2){
+          const p=Object.values(pointers);
+          pinchStartDist=dist(p[0],p[1]);
+          pinchStartScale=state.scale;
+          dragLast=null;
+        }
+      });
+      wrap.addEventListener('pointermove', e=>{
+        if(!pointers[e.pointerId]) return;
+        pointers[e.pointerId]={x:e.clientX, y:e.clientY};
+        const ids=Object.keys(pointers);
+        if(ids.length===1 && dragLast){
+          const dx=e.clientX-dragLast.x, dy=e.clientY-dragLast.y;
+          dragDistance+=Math.hypot(dx,dy);
+          state.x+=dx; state.y+=dy;
+          clampPan(); applyTransform();
+          dragLast={x:e.clientX, y:e.clientY};
+        } else if(ids.length===2){
+          const p=Object.values(pointers);
+          const newDist=dist(p[0],p[1]);
+          const midX=(p[0].x+p[1].x)/2, midY=(p[0].y+p[1].y)/2;
+          const rect=wrap.getBoundingClientRect();
+          const factor=(newDist/pinchStartDist);
+          const targetScale=Math.max(state.minScale, Math.min(state.maxScale, pinchStartScale*factor));
+          zoomAt(midX-rect.left, midY-rect.top, targetScale/state.scale);
+        }
+      });
+      function endPointer(e){
+        delete pointers[e.pointerId];
+        if(Object.keys(pointers).length===0){
+          wrap.classList.remove('dragging');
+          if(dragDistance>6){ state.suppressClick=true; }
+          dragLast=null;
+        }
+      }
+      wrap.addEventListener('pointerup', endPointer);
+      wrap.addEventListener('pointercancel', endPointer);
+      wrap.addEventListener('pointerleave', endPointer);
+      wrap.addEventListener('wheel', e=>{
+        e.preventDefault();
+        const rect=wrap.getBoundingClientRect();
+        zoomAt(e.clientX-rect.left, e.clientY-rect.top, e.deltaY<0?1.15:1/1.15);
+      }, {passive:false});
+      wrap.addEventListener('click', e=>{
+        if(state.suppressClick){
+          e.stopPropagation();
+          e.preventDefault();
+          state.suppressClick=false;
+        }
+      }, true);
+    }
+    if(document.getElementById(wrapId)) bind();
+    else document.addEventListener('DOMContentLoaded', bind);
+  })();
+  return {state, init, recenter, zoomStep, zoomAt, computeFitScale};
+}
+const gameMap=createPannableMap('mapWrap','mapSvg',4);
+const setupMap=createPannableMap('setupMapWrap','setupMapSvg',3);
+setupMap.init(null);
+function currentHomeCity(){ return (S && S.hubs && S.hubs.size>0) ? cityById([...S.hubs][0]) : null; }
+function initMapView(){ gameMap.init(currentHomeCity()); }
+function mapCenterView(){ gameMap.recenter(currentHomeCity()); }
+function mapZoomStep(dir){ gameMap.zoomStep(dir); }
+function setupMapZoomStep(dir){ setupMap.zoomStep(dir); }
+function setupMapCenterView(){ setupMap.recenter(cfg.home? cityById(cfg.home) : null); }
+window.addEventListener('resize', ()=>{
+  if(currentView==='map') initMapView();
+  const setupEl=document.getElementById('setup');
+  if(setupEl && setupEl.style.display!=='none') setupMap.init(cfg.home? cityById(cfg.home) : null);
+});
+function buildMapBackground(){
+  let html='';
+  html+=`<defs>
+    <linearGradient id="landGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c3c53"/>
+      <stop offset="100%" stop-color="#132a3e"/>
+    </linearGradient>
+  </defs>`;
+  // graticule (lat/long grid) for cartographic feel
+  let grid='';
+  for(let x=0;x<=1120;x+=100) grid+=`<line x1="${x}" y1="0" x2="${x}" y2="560" stroke="#1a3448" stroke-width="1" opacity="0.35"/>`;
+  for(let y=0;y<=560;y+=80) grid+=`<line x1="0" y1="${y}" x2="1120" y2="${y}" stroke="#1a3448" stroke-width="1" opacity="0.35"/>`;
+  html+=`<g>${grid}</g>`;
+  // landmasses
+  Object.values(LANDMASSES).forEach(d=>{
+    html+=`<path d="${d}" fill="url(#landGrad)" stroke="#2a5170" stroke-width="1.5" stroke-linejoin="round"/>`;
+  });
+  return html;
+}
+function renderMap(){
+  const svg=document.getElementById('mapSvg');
+  let html=buildMapBackground();
+
+  // route arcs
+  S.routes.forEach(r=>{
+    const a=cityById(r.from), b=cityById(r.to);
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const nx=-dy, ny=dx; const nl=Math.hypot(nx,ny)||1;
+    const off=Math.min(60, Math.hypot(dx,dy)*0.18);
+    const cx=mx+(nx/nl)*off, cy=my+(ny/nl)*off;
+    html+=`<path class="route-arc" d="M${a.x},${a.y} Q${cx},${cy} ${b.x},${b.y}"/>`;
+  });
+
+  // cities
+  CITIES.forEach(c=>{
+    const unlocked = S.opened.has(c.id);
+    const isHub = S.hubs.has(c.id);
+    const r = 4 + SIZE_MULT[c.size]*2.2;
+    const fill = isHub ? '#f2b955' : (unlocked ? '#eef4f8' : '#4d6070');
+    html+=`<g class="city-dot" onclick="onCityTap('${c.id}')">
+      ${isHub?`<circle cx="${c.x}" cy="${c.y}" r="${r+5}" fill="none" stroke="#f2b955" stroke-width="1.4" opacity="0.6"/>`:''}
+      <circle cx="${c.x}" cy="${c.y}" r="${r}" fill="${fill}" opacity="${unlocked?1:0.55}" stroke="#04141f" stroke-width="1"/>
+      <text class="city-label ${unlocked?'unlocked':''}" x="${c.x}" y="${c.y-r-5}" text-anchor="middle">${c.name}</text>
+    </g>`;
+  });
+
+  svg.innerHTML=html;
+}
+
+function renderSetupMap(){
+  const svg=document.getElementById('setupMapSvg');
+  if(!svg) return;
+  let html=buildMapBackground();
+  CITIES.forEach(c=>{
+    const eligible = SIZE_RANK[c.size]>=SIZE_RANK['L'];
+    const selected = cfg.home===c.id;
+    const r = 4 + SIZE_MULT[c.size]*2.2;
+    const fill = selected ? '#f2b955' : (eligible ? '#eef4f8' : '#4d6070');
+    html+=`<g class="city-dot" onclick="selectHomeCity('${c.id}')">
+      ${selected?`<circle cx="${c.x}" cy="${c.y}" r="${r+6}" fill="none" stroke="#f2b955" stroke-width="1.6" opacity="0.8"/>`:''}
+      <circle cx="${c.x}" cy="${c.y}" r="${r}" fill="${fill}" opacity="${eligible?1:0.5}" stroke="#04141f" stroke-width="1"/>
+      ${eligible?`<text class="city-label unlocked" x="${c.x}" y="${c.y-r-5}" text-anchor="middle">${c.name}</text>`:''}
+    </g>`;
+  });
+  svg.innerHTML=html;
+}
+function selectHomeCity(id){
+  const c=cityById(id);
+  if(SIZE_RANK[c.size]<SIZE_RANK['L']){
+    toast(`${c.name}'s airport is too small to serve as a home hub — look for the gold-eligible cities.`);
+    return;
+  }
+  cfg.home=id;
+  renderSetupMap();
+  buildSetup();
+}
+
+function nearestOf(id, idSet){
+  const c=cityById(id);
+  let best=null, bestD=Infinity;
+  idSet.forEach(oid=>{
+    if(oid===id) return;
+    const d=dist(c,cityById(oid));
+    if(d<bestD){ bestD=d; best=oid; }
+  });
+  return best? {city:cityById(best), miles:Math.round(bestD)} : null;
+}
+function onCityTap(id){
+  const c=cityById(id);
+  const unlocked=S.opened.has(id);
+  const isHub=S.hubs.has(id);
+  const routesHere=S.routes.filter(r=>r.from===id||r.to===id).length;
+  const nearestAirport=nearestOf(id, S.opened);
+  const nearestHub=nearestOf(id, S.hubs);
+  let body=`<div class="modal-head"><h3>${c.name}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="card-meta">${c.region} · Airport size: ${SIZE_FULL[c.size]}</div>
+    <div class="tag hub" style="margin-top:6px;">${CHAR_INFO[c.char].icon} ${c.char}</div>
+    <div class="card-meta" style="margin-top:6px;">${CHAR_INFO[c.char].desc}</div>
+    <div class="card-meta" style="margin-top:6px;">Largest aircraft that can land: up to ${['S','M','L','XL'].filter(s=>SIZE_RANK[s]<=SIZE_RANK[c.size]).map(s=>SIZE_FULL[s]).pop()}</div>
+    <div class="stat-grid" style="margin-top:12px;">
+      <div class="stat-box"><div class="sv mono" style="font-size:14px;">${nearestAirport? nearestAirport.miles.toLocaleString()+'mi' : '—'}</div><div class="sl">Nearest airport${nearestAirport? ' ('+nearestAirport.city.name+')':''}</div></div>
+      <div class="stat-box gold"><div class="sv mono" style="font-size:14px;">${nearestHub? nearestHub.miles.toLocaleString()+'mi' : '—'}</div><div class="sl">Nearest hub${nearestHub? ' ('+nearestHub.city.name+')':''}</div></div>
+    </div>
+    <div style="margin-top:14px;">`;
+  if(!unlocked){
+    body+=`<p style="color:var(--slate); font-size:13px;">Not yet in your network. Opening this destination lets you build routes to and from it.</p>
+      <div class="stat-box gold" style="margin-top:10px;"><div class="sv mono">${fmtMoney(openCost(c))}</div><div class="sl">One-time opening cost</div></div>
+      <button class="buy-btn" style="margin-top:16px;" ${S.cash<openCost(c)?'disabled':''} onclick="doOpenCity('${id}')">Open Destination</button>`;
+  } else {
+    body+=`<div class="tag active">Open</div>${isHub?'<div class="tag hub">Hub</div>':''}
+      <div class="stat-grid" style="margin-top:12px;">
+        <div class="stat-box"><div class="sv mono">${routesHere}</div><div class="sl">Routes here</div></div>
+        <div class="stat-box"><div class="sv mono">${isHub?'Yes':'No'}</div><div class="sl">Hub status</div></div>
+      </div>`;
+    if(!isHub){
+      body+=`<div class="stat-box gold" style="margin-top:10px;"><div class="sv mono">${fmtMoney(hubCost(c))}</div><div class="sl">Hub establishment cost</div></div>
+      <p style="color:var(--slate); font-size:12px; margin-top:8px;">Hubs cut fuel costs ~15% and boost passenger demand ~25% on connected routes.</p>
+      <button class="buy-btn" style="margin-top:12px;" ${S.cash<hubCost(c)?'disabled':''} onclick="doMakeHub('${id}')">Establish Hub</button>`;
+    }
+    body+=`<button class="mini-btn accent" style="margin-top:14px; width:100%; padding:12px;" onclick="closeModal(); openCreateRoute('${id}')">Create Route From Here</button>`;
+  }
+  body+='</div>';
+  showModal(body);
+}
+function doOpenCity(id){
+  const c=cityById(id); const cost=openCost(c);
+  if(S.cash<cost) return;
+  S.cash-=cost; S.opened.add(id);
+  closeModal(); renderAll();
+  toast(`${c.name} opened for business`);
+}
+function doMakeHub(id){
+  const c=cityById(id); const cost=hubCost(c);
+  if(S.cash<cost) return;
+  S.cash-=cost; S.hubs.add(id);
+  pushFeedback('headline', `${S.name} designates ${c.name} as its newest hub.`);
+  closeModal(); renderAll();
+  toast(`${c.name} is now a hub`);
+}
+
+/* ---------------- FLEET ---------------- */
+function renderFleet(){
+  document.getElementById('fleetSub').textContent=`${S.fleet.length} aircraft`;
+  const list=document.getElementById('fleetList');
+  if(S.fleet.length===0){
+    list.innerHTML=emptyState('🛩️','No aircraft yet','Buy your first plane to start opening routes.');
+    return;
+  }
+  list.innerHTML=S.fleet.map(ac=>{
+    const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+    const route=S.routes.find(r=>r.aircraftId===ac.id);
+    const condition=ac.condition!==undefined? ac.condition : 100;
+    const missing=100-condition;
+    const fixCost=Math.round(missing*type.cost*0.0006*(ac.leased?1.3:1));
+    return `<div class="card">
+      <div class="card-row">
+        <div>
+          <div class="card-title">${type.icon} ${type.name} ${ac.leased?'<span class="tag hub" style="margin:0 0 0 4px;">LEASED</span>':''}</div>
+          <div class="card-meta">${type.category} · Range ${type.range.toLocaleString()}mi · ${type.capacity} seats · ${type.speed}mph</div>
+        </div>
+        ${route||ac.leased?'':`<button class="mini-btn danger" onclick="sellAircraft(${ac.id})">Sell</button>`}
+      </div>
+      ${sizeBar(type.sizeClass)}
+      ${conditionBar(condition)}
+      ${missing>0? `<button class="mini-btn accent" style="margin-top:8px; width:100%; padding:9px;" ${S.cash<fixCost?'disabled':''} onclick="fixAircraft(${ac.id})">🔧 Fix for ${fmtMoney(fixCost)}</button>` : ''}
+      ${ac.leased? `<div class="card-meta" style="margin-top:8px;">${fmtMoney(ac.weeklyLeaseCost)}/wk · ${ac.leaseWeeksLeft} of ${ac.leaseTermWeeks} week${ac.leaseTermWeeks===1?'':'s'} left${ac.renewalCount>0?' · renewed '+ac.renewalCount+'x':''}</div>
+        ${isLeaseRenewable(ac)? `<button class="mini-btn accent" style="margin-top:6px; width:100%; padding:9px;" onclick="openRenewLease(${ac.id})">🔁 Renew Lease</button>` : ''}
+        <button class="mini-btn danger" style="margin-top:6px; width:100%; padding:9px;" onclick="returnLeaseEarly(${ac.id})">Return Lease Early</button>` : ''}
+      ${route? `<div class="tag active" style="margin-top:8px;">Flying ${cityById(route.from).id}–${cityById(route.to).id}</div>` : `<div class="tag idle" style="margin-top:8px;">Idle — assign to a route</div>`}
+    </div>`;
+  }).join('');
+}
+function sellAircraft(id){
+  const idx=S.fleet.findIndex(a=>a.id===id);
+  if(idx<0) return;
+  const ac=S.fleet[idx];
+  if(ac.leased){ toast('Leased aircraft must be returned, not sold — see the Return Early option.'); return; }
+  const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+  const conditionMult=(ac.condition!==undefined? ac.condition : 100)/100;
+  const refund=Math.round(type.cost*0.55*Math.max(0.3,conditionMult));
+  S.cash+=refund;
+  S.fleet.splice(idx,1);
+  renderAll();
+  toast(`Sold aircraft for ${fmtMoney(refund)}`);
+}
+function fixAircraft(id){
+  const ac=S.fleet.find(a=>a.id===id);
+  if(!ac) return;
+  const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+  const missing=100-(ac.condition||0);
+  if(missing<=0){ toast('Already at full condition'); return; }
+  const cost=Math.round(missing*type.cost*0.0006*(ac.leased?1.3:1));
+  if(S.cash<cost) return;
+  S.cash-=cost;
+  ac.condition=100;
+  renderAll();
+  toast(`${type.name} serviced for ${fmtMoney(cost)}`);
+}
+let leaseFilter='All';
+function setLeaseFilter(cat){
+  leaseFilter=cat;
+  openLeaseCatalog();
+}
+function openLeaseCatalog(){
+  const cats=['All','Turboprop','Regional Jet','Narrowbody','High-Density Shuttle','Widebody','Jumbo','Business Jet'];
+  let available=LEASE_CATALOG.filter(l=>!S.leasedTaken.has(l.id));
+  if(leaseFilter!=='All') available=available.filter(l=>AIRCRAFT_TYPES.find(t=>t.key===l.typeKey).category===leaseFilter);
+  let body=`<div class="modal-head"><h3>Leasing Market</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <p class="card-meta">Aircraft leased from other airlines. Often well-worn — check condition before you commit.</p>
+    <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; margin:10px 0 2px;">
+      ${cats.map(c=>`<button class="mini-btn ${leaseFilter===c?'accent':''}" style="flex:0 0 auto;" onclick="setLeaseFilter('${c}')">${c}</button>`).join('')}
+    </div>`;
+  if(available.length===0){
+    body+=`<p style="color:var(--slate); font-size:13px; margin-top:12px;">No leasable aircraft available in this category right now.</p>`;
+  } else {
+    body+=available.map(l=>{
+      const type=AIRCRAFT_TYPES.find(t=>t.key===l.typeKey);
+      return `<div class="shop-card">
+        <div class="card-row"><div class="card-title">${type.icon} ${type.name}</div><div class="mono" style="color:var(--gold); font-weight:700;">${fmtMoney(l.weeklyCost)}/wk</div></div>
+        <div class="card-meta" style="margin-top:2px;">${type.category}</div>
+        ${conditionBar(l.condition)}
+        <div class="shop-stats" style="margin-top:8px;">
+          <div>RANGE<b>${type.range.toLocaleString()}mi</b></div>
+          <div>SEATS<b>${type.capacity}</b></div>
+          <div>SPEED<b>${type.speed}mph</b></div>
+        </div>
+        <button class="buy-btn" style="margin-top:12px;" onclick="openLeaseTermPicker('${l.id}')">Choose Lease Term</button>
+      </div>`;
+    }).join('');
+  }
+  showModal(body);
+}
+function openLeaseTermPicker(leaseId){
+  const l=LEASE_CATALOG.find(x=>x.id===leaseId);
+  const type=AIRCRAFT_TYPES.find(t=>t.key===l.typeKey);
+  const defWeeks=12;
+  const body=`<div class="modal-head"><h3>${type.icon} ${type.name}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="card-meta">${fmtMoney(l.weeklyCost)}/week · ${type.category}</div>
+    ${conditionBar(l.condition)}
+    <label class="f-label">Lease length</label>
+    <input type="text" id="leaseWeeksLabel" readonly value="${defWeeks} weeks" style="text-align:center; font-family:'Space Mono',monospace; font-size:20px; color:var(--cyan); border:none; background:transparent; width:100%;">
+    <div class="slider-row">
+      <input type="range" id="leaseWeeksSlider" min="${LEASE_MIN_WEEKS}" max="${LEASE_MAX_WEEKS}" value="${defWeeks}" oninput="updateLeaseTermPicker('${leaseId}')">
+      <div class="slider-labels"><span>${LEASE_MIN_WEEKS}w</span><span>${LEASE_MAX_WEEKS}w</span></div>
+    </div>
+    <div id="leaseTermPreview" class="stat-grid" style="margin-top:14px;"></div>
+    <p style="color:var(--slate); font-size:12px; margin-top:10px;">Once this lease reaches its final 25%, you'll be able to renew it for another 1-50 weeks instead of returning the aircraft.</p>
+    <button class="buy-btn" style="margin-top:14px;" ${S.cash<leaseSigningFee(l.weeklyCost)?'disabled':''} onclick="leaseAircraft('${leaseId}')">Sign Lease</button>`;
+  showModal(body);
+  updateLeaseTermPicker(leaseId);
+}
+function updateLeaseTermPicker(leaseId){
+  const l=LEASE_CATALOG.find(x=>x.id===leaseId);
+  const weeks=parseInt(document.getElementById('leaseWeeksSlider').value);
+  document.getElementById('leaseWeeksLabel').value=weeks+' weeks';
+  const signingFee=leaseSigningFee(l.weeklyCost);
+  const totalCost=Math.round(l.weeklyCost*weeks);
+  document.getElementById('leaseTermPreview').innerHTML=`
+    <div class="stat-box gold"><div class="sv mono">${fmtMoney(signingFee)}</div><div class="sl">Signing fee (due now)</div></div>
+    <div class="stat-box"><div class="sv mono">${fmtMoney(totalCost)}</div><div class="sl">Total over ${weeks}w</div></div>`;
+}
+function leaseAircraft(leaseId){
+  const l=LEASE_CATALOG.find(x=>x.id===leaseId);
+  const weeks=parseInt(document.getElementById('leaseWeeksSlider').value);
+  const signingFee=leaseSigningFee(l.weeklyCost);
+  if(!l || S.leasedTaken.has(leaseId) || S.cash<signingFee) return;
+  S.cash-=signingFee;
+  S.leasedTaken.add(leaseId);
+  S.fleet.push({id:S.nextId++, type:l.typeKey, condition:l.condition, leased:true, leaseId:l.id, weeklyLeaseCost:l.weeklyCost, leaseWeeksLeft:weeks, leaseTermWeeks:weeks, renewalCount:0, renewalNotified:false});
+  const type=AIRCRAFT_TYPES.find(t=>t.key===l.typeKey);
+  closeModal(); renderAll(); switchView('fleet');
+  toast(`Leased ${type.name} for ${weeks} weeks`);
+}
+function isLeaseRenewable(ac){
+  return ac.leased && ac.leaseWeeksLeft<=ac.leaseTermWeeks*0.25;
+}
+function openRenewLease(id){
+  const ac=S.fleet.find(a=>a.id===id);
+  if(!ac || !isLeaseRenewable(ac)) return;
+  const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+  const nextRenewal=ac.renewalCount+1;
+  const defWeeks=12;
+  const body=`<div class="modal-head"><h3>Renew Lease</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="card-meta">${type.icon} ${type.name} · ${fmtMoney(ac.weeklyLeaseCost)}/wk · Renewal #${nextRenewal}</div>
+    <label class="f-label">Extend by</label>
+    <input type="text" id="renewWeeksLabel" readonly value="${defWeeks} weeks" style="text-align:center; font-family:'Space Mono',monospace; font-size:20px; color:var(--cyan); border:none; background:transparent; width:100%;">
+    <div class="slider-row">
+      <input type="range" id="renewWeeksSlider" min="${LEASE_MIN_WEEKS}" max="${LEASE_MAX_WEEKS}" value="${defWeeks}" oninput="updateRenewPreview(${id})">
+      <div class="slider-labels"><span>${LEASE_MIN_WEEKS}w</span><span>${LEASE_MAX_WEEKS}w</span></div>
+    </div>
+    <div id="renewPreview" class="stat-grid" style="margin-top:14px;"></div>
+    ${nextRenewal%3===0? `<p style="color:var(--gold); font-size:12px; margin-top:10px;">This is your ${nextRenewal}${nextRenewal===3?'rd':(nextRenewal===2?'nd':(nextRenewal===1?'st':'th'))} renewal — a loyalty surcharge kicks in every 3rd extension.</p>` : ''}
+    <button class="buy-btn" style="margin-top:14px;" onclick="renewLease(${id})">Confirm Renewal</button>`;
+  showModal(body);
+  updateRenewPreview(id);
+}
+function updateRenewPreview(id){
+  const ac=S.fleet.find(a=>a.id===id);
+  const weeks=parseInt(document.getElementById('renewWeeksSlider').value);
+  document.getElementById('renewWeeksLabel').value=weeks+' weeks';
+  const fee=leaseRenewalFee(ac.weeklyLeaseCost, weeks, ac.renewalCount+1);
+  document.getElementById('renewPreview').innerHTML=`
+    <div class="stat-box"><div class="sv mono">${fmtMoney(fee.base)}</div><div class="sl">Base extension fee</div></div>
+    <div class="stat-box ${fee.surcharge>0?'bad':''}"><div class="sv mono">${fmtMoney(fee.surcharge)}</div><div class="sl">Loyalty surcharge</div></div>
+    <div class="stat-box gold" style="grid-column:1/-1;"><div class="sv mono">${fmtMoney(fee.total)}</div><div class="sl">Total renewal cost</div></div>`;
+}
+function renewLease(id){
+  const ac=S.fleet.find(a=>a.id===id);
+  if(!ac || !isLeaseRenewable(ac)) return;
+  const weeks=parseInt(document.getElementById('renewWeeksSlider').value);
+  const renewalNumber=ac.renewalCount+1;
+  const fee=leaseRenewalFee(ac.weeklyLeaseCost, weeks, renewalNumber);
+  if(S.cash<fee.total){ toast('Not enough cash for this renewal'); return; }
+  S.cash-=fee.total;
+  ac.renewalCount=renewalNumber;
+  ac.leaseWeeksLeft=weeks;
+  ac.leaseTermWeeks=weeks;
+  ac.renewalNotified=false;
+  const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+  closeModal(); renderAll(); switchView('fleet');
+  toast(`Renewed ${type.name}'s lease for ${weeks} more weeks (${fmtMoney(fee.total)})`);
+}
+function returnLeaseEarly(id){
+  const idx=S.fleet.findIndex(a=>a.id===id);
+  if(idx<0) return;
+  const ac=S.fleet[idx];
+  if(!ac.leased) return;
+  const fee=Math.round(ac.weeklyLeaseCost*ac.leaseWeeksLeft*0.25);
+  S.cash-=fee;
+  S.leasedTaken.delete(ac.leaseId);
+  S.fleet.splice(idx,1);
+  renderAll();
+  toast(`Returned lease early — early-termination fee ${fmtMoney(fee)}`);
+}
+let shopFilter='All';
+function openShop(){
+  renderShopModal();
+}
+function setShopFilter(cat){
+  shopFilter=cat;
+  renderShopModal();
+}
+function renderShopModal(){
+  const cats=['All','Turboprop','Regional Jet','Narrowbody','High-Density Shuttle','Widebody','Jumbo','Business Jet'];
+  const list=shopFilter==='All'? AIRCRAFT_TYPES : AIRCRAFT_TYPES.filter(t=>t.category===shopFilter);
+  let body=`<div class="modal-head"><h3>Aircraft Shop</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; margin-bottom:6px;">
+      ${cats.map(c=>`<button class="mini-btn ${shopFilter===c?'accent':''}" style="flex:0 0 auto;" onclick="setShopFilter('${c}')">${c}</button>`).join('')}
+    </div>`;
+  body+=list.map(t=>`
+    <div class="shop-card">
+      <div class="card-row"><div class="card-title">${t.icon} ${t.name}</div><div class="mono" style="color:var(--gold); font-weight:700;">${fmtMoney(t.cost)}</div></div>
+      <div class="card-meta" style="margin-top:2px; color:var(--cyan);">${t.category}</div>
+      <div class="card-meta" style="margin-top:6px;">${t.desc}</div>
+      <div class="shop-stats">
+        <div>RANGE<b>${t.range.toLocaleString()}mi</b></div>
+        <div>SEATS<b>${t.capacity}</b></div>
+        <div>SPEED<b>${t.speed}mph</b></div>
+      </div>
+      <div class="card-meta" style="margin-top:2px;">Airport size needed: ${SIZE_FULL[t.sizeClass]}</div>
+      ${sizeBar(t.sizeClass)}
+      <button class="buy-btn" style="margin-top:12px;" ${S.cash<t.cost?'disabled':''} onclick="buyAircraft('${t.key}')">Buy for ${fmtMoney(t.cost)}</button>
+    </div>`).join('');
+  showModal(body);
+}
+function buyAircraft(key){
+  const type=AIRCRAFT_TYPES.find(t=>t.key===key);
+  if(S.cash<type.cost) return;
+  S.cash-=type.cost;
+  S.fleet.push({id:S.nextId++, type:key, condition:100, leased:false});
+  if(type.cost>=100000000){
+    pushFeedback('headline', `${S.name} adds a ${type.name} to the fleet, signaling bigger ambitions.`);
+  }
+  closeModal(); renderAll(); switchView('fleet');
+  toast(`${type.name} added to fleet`);
+}
+
+/* ---------------- ROUTES ---------------- */
+function renderRoutes(){
+  document.getElementById('routesSub').textContent=`${S.routes.length} active`;
+  const list=document.getElementById('routesList');
+  if(S.routes.length===0){
+    list.innerHTML=emptyState('〰️','No routes yet','Open a destination and create a route to start earning.');
+    return;
+  }
+  list.innerHTML=S.routes.map(r=>{
+    const a=cityById(r.from), b=cityById(r.to);
+    const d=Math.round(dist(a,b));
+    const ac=S.fleet.find(f=>f.id===r.aircraftId);
+    const type=ac?AIRCRAFT_TYPES.find(t=>t.key===ac.type):null;
+    const est=estimateRoute(r);
+    return `<div class="card">
+      <div class="card-row">
+        <div>
+          <div class="card-title">${a.name} ⇄ ${b.name}</div>
+          <div class="card-meta">${d.toLocaleString()}mi · ${type?type.name:'No aircraft assigned'}</div>
+        </div>
+        <button class="mini-btn danger" onclick="closeRoute(${r.id})">Close</button>
+      </div>
+      <div class="slider-row">
+        <div class="slider-labels"><span>Ticket price</span><span class="mono">$${r.price}</span></div>
+        <input type="range" min="${Math.round(est.baseline*0.5)}" max="${Math.round(est.baseline*2)}" value="${r.price}" oninput="setRoutePrice(${r.id}, this.value)">
+      </div>
+      <div class="stat-grid" style="margin-top:10px;">
+        <div class="stat-box good"><div class="sv mono">${fmtMoney(est.weeklyProfit)}</div><div class="sl">Est. weekly profit</div></div>
+        <div class="stat-box"><div class="sv mono">${Math.round(est.loadFactor*100)}%</div><div class="sl">Load factor</div></div>
+      </div>
+      ${!ac?`<button class="mini-btn accent" style="margin-top:10px; width:100%; padding:10px;" onclick="openAssign(${r.id})">Assign Aircraft</button>`
+            :`<button class="mini-btn" style="margin-top:10px; width:100%; padding:10px;" onclick="openAssign(${r.id})">Reassign Aircraft</button>`}
+    </div>`;
+  }).join('');
+}
+function baselinePrice(d){ return Math.round(55 + d*0.11); }
+function estimateRoute(r){
+  const a=cityById(r.from), b=cityById(r.to);
+  const d=dist(a,b);
+  const ac=S.fleet.find(f=>f.id===r.aircraftId);
+  const baseline=baselinePrice(d);
+  if(!ac) return {baseline, weeklyProfit:0, loadFactor:0};
+  const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+  const condition=ac.condition!==undefined? ac.condition : 100;
+  const flightTime=d/type.speed;
+  const cycle=2*flightTime+3;
+  const perDay=Math.max(1, Math.min(4, Math.floor(20/cycle)));
+  const flightsWeek=perDay*7;
+  const conditionCapMult = condition>=80? 1 : Math.max(0.2, condition/80);
+  const capacityWeek=flightsWeek*type.capacity*conditionCapMult;
+  const hubBonus = (S.hubs.has(r.from)||S.hubs.has(r.to)) ? 1.25 : 1;
+  const sizeA=SIZE_MULT[a.size], sizeB=SIZE_MULT[b.size];
+  const charA=CHAR_INFO[a.char], charB=CHAR_INFO[b.char];
+  const charDemandMult=(charA.demandMult+charB.demandMult)/2;
+  const priceTolerance=(charA.priceTolerance+charB.priceTolerance)/2;
+  let demand = Math.sqrt(sizeA*sizeB)*850*hubBonus*charDemandMult;
+  demand *= marketingDemandMult();
+  const ratio = r.price/baseline;
+  const adjustedRatio = 1+(ratio-1)/priceTolerance;
+  demand *= Math.max(0.4, Math.min(1.3, 2-adjustedRatio));
+  const staffFactor = staffEfficiency();
+  demand *= staffFactor;
+  const passengers=Math.min(demand, capacityWeek);
+  const loadFactor = capacityWeek>0? passengers/capacityWeek : 0;
+  const revenue=passengers*r.price;
+  const conditionFuelMult = condition>=70? 1 : 1+(70-condition)*0.01;
+  const fuelDiscount=((S.hubs.has(r.from)||S.hubs.has(r.to))?0.85:1) * opsFuelMult() * conditionFuelMult;
+  const fuelCost=d*flightsWeek*type.fuel*fuelDiscount;
+  const maint=type.maint;
+  const weeklyProfit=revenue-fuelCost-maint;
+  return {baseline, weeklyProfit, loadFactor, revenue, fuelCost, maint, passengers, flightsWeek};
+}
+function setRoutePrice(id,val){
+  const r=S.routes.find(r=>r.id===id); if(!r) return;
+  r.price=parseInt(val); renderRoutes();
+}
+function closeRoute(id){
+  S.routes=S.routes.filter(r=>r.id!==id);
+  renderAll();
+  toast('Route closed');
+}
+function openCreateRoute(prefFrom){
+  const opened=[...S.opened];
+  if(opened.length<2){ toast('Open at least 2 destinations first'); return; }
+  let body=`<div class="modal-head"><h3>New Route</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <label class="f-label">From</label>
+    <select id="rFrom">${opened.map(id=>`<option value="${id}" ${id===prefFrom?'selected':''}>${cityById(id).name}</option>`).join('')}</select>
+    <label class="f-label">To</label>
+    <select id="rTo">${opened.map(id=>`<option value="${id}">${cityById(id).name}</option>`).join('')}</select>
+    <div id="routeDistInfo" class="card-meta" style="margin-top:12px;"></div>
+    <label class="f-label">Aircraft</label>
+    <select id="rAircraft"></select>
+    <div id="routeEstimate" class="stat-grid" style="margin-top:14px;"></div>
+    <button class="buy-btn" style="margin-top:18px;" onclick="doCreateRoute()">Open Route</button>`;
+  showModal(body);
+  document.getElementById('rFrom').onchange=updateRouteModal;
+  document.getElementById('rTo').onchange=updateRouteModal;
+  updateRouteModal();
+}
+function updateRouteModal(){
+  const from=document.getElementById('rFrom').value;
+  const to=document.getElementById('rTo').value;
+  const a=cityById(from), b=cityById(to);
+  const d=Math.round(dist(a,b));
+  document.getElementById('routeDistInfo').textContent = from===to ? 'Pick two different cities' : `Distance: ${d.toLocaleString()} miles · Airports: ${SIZE_FULL[a.size]} ⇄ ${SIZE_FULL[b.size]}`;
+  const sel=document.getElementById('rAircraft');
+  const est=document.getElementById('routeEstimate');
+  const free=S.fleet.filter(ac=>!S.routes.some(r=>r.aircraftId===ac.id));
+  if(free.length===0){
+    sel.innerHTML=`<option value="">No idle aircraft — buy one first</option>`;
+    est.innerHTML='';
+    return;
+  }
+  sel.innerHTML=free.map(ac=>{
+    const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+    const rangeOk=type.range>=d;
+    const fit=routeFit(type,a,b);
+    const ok=rangeOk&&fit.ok;
+    const reason=!rangeOk?' — out of range':(!fit.ok?` — ${fit.reason}`:'');
+    return `<option value="${ac.id}" ${ok?'':'disabled'}>${type.name} (${type.sizeClass})${reason}</option>`;
+  }).join('');
+  sel.onchange=()=>updateRouteEstimate(from,to);
+  updateRouteEstimate(from,to);
+}
+function updateRouteEstimate(from,to){
+  const est=document.getElementById('routeEstimate');
+  const acId=parseInt(document.getElementById('rAircraft').value);
+  if(from===to || !acId){ est.innerHTML=''; return; }
+  const a=cityById(from), b=cityById(to);
+  const d=dist(a,b);
+  const fake={from, to, price:baselinePrice(d), aircraftId:acId};
+  const r=estimateRoute(fake);
+  est.innerHTML=`
+    <div class="stat-box ${r.weeklyProfit>=0?'good':'bad'}"><div class="sv mono">${fmtMoney(r.weeklyProfit)}</div><div class="sl">Est. weekly profit</div></div>
+    <div class="stat-box"><div class="sv mono">${Math.round(r.loadFactor*100)}%</div><div class="sl">Load factor</div></div>`;
+}
+function doCreateRoute(){
+  const from=document.getElementById('rFrom').value;
+  const to=document.getElementById('rTo').value;
+  const acId=parseInt(document.getElementById('rAircraft').value);
+  if(from===to){ toast('Pick two different cities'); return; }
+  if(!acId){ toast('No aircraft selected'); return; }
+  const a=cityById(from), b=cityById(to);
+  const d=dist(a,b);
+  const ac=S.fleet.find(f=>f.id===acId);
+  const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+  if(type.range<d){ toast('Aircraft out of range for this route'); return; }
+  const fit=routeFit(type,a,b);
+  if(!fit.ok){ toast(fit.reason); return; }
+  S.routes.push({id:S.nextId++, from, to, aircraftId:acId, price:baselinePrice(d)});
+  pushFeedback('headline', `${S.name} launches new route: ${a.name} ⇄ ${b.name}.`);
+  closeModal(); renderAll(); switchView('routes');
+  toast('Route opened');
+}
+function openAssign(routeId){
+  const r=S.routes.find(r=>r.id===routeId);
+  const a=cityById(r.from), b=cityById(r.to);
+  const d=dist(a,b);
+  const free=S.fleet.filter(ac=>!S.routes.some(rr=>rr.aircraftId===ac.id && rr.id!==routeId));
+  let body=`<div class="modal-head"><h3>Assign Aircraft</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="card-meta">${a.name} (${SIZE_FULL[a.size]}) ⇄ ${b.name} (${SIZE_FULL[b.size]}) · ${Math.round(d).toLocaleString()}mi</div>
+    <label class="f-label">Aircraft</label>
+    <select id="assignSel">${free.map(ac=>{
+      const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+      const rangeOk=type.range>=d;
+      const fit=routeFit(type,a,b);
+      const ok=rangeOk&&fit.ok;
+      const reason=!rangeOk?' — out of range':(!fit.ok?` — ${fit.reason}`:'');
+      return `<option value="${ac.id}" ${ok?'':'disabled'}>${type.name} (${type.sizeClass})${reason}</option>`;
+    }).join('')||'<option value="">No idle aircraft</option>'}</select>
+    <button class="buy-btn" style="margin-top:18px;" onclick="doAssign(${routeId})">Assign</button>`;
+  showModal(body);
+}
+function doAssign(routeId){
+  const val=document.getElementById('assignSel').value;
+  if(!val) return;
+  const r=S.routes.find(r=>r.id===routeId);
+  const a=cityById(r.from), b=cityById(r.to);
+  const ac=S.fleet.find(f=>f.id===parseInt(val));
+  const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+  const fit=routeFit(type,a,b);
+  if(!fit.ok){ toast(fit.reason); return; }
+  r.aircraftId=parseInt(val);
+  closeModal(); renderAll();
+  toast('Aircraft assigned');
+}
+
+/* ---------------- STAFF ---------------- */
+function requiredStaff(){
+  const n=S.fleet.length, h=S.hubs.size, o=S.opened.size, rt=S.routes.length;
+  const req={};
+  EMPLOYEE_ROLES.forEach(role=>{ req[role.key]=role.req(n,h,o,rt); });
+  return req;
+}
+function staffEfficiency(){
+  const req=requiredStaff();
+  const ratios=[];
+  EMPLOYEE_ROLES.forEach(role=>{
+    const k=role.key;
+    ratios.push(req[k]===0? 1 : Math.min(1, S.staff[k]/req[k]));
+  });
+  return Math.max(crewFloor(), Math.min(...ratios));
+}
+function weeklyPayroll(){
+  let total=0;
+  EMPLOYEE_ROLES.forEach(role=>{ total+=S.staff[role.key]*role.salary; });
+  S.managers.forEach(k=>{ const m=MANAGER_ROLES.find(r=>r.key===k); if(m) total+=m.salary; });
+  S.directors.forEach(k=>{ const d=DIRECTOR_ROLES.find(r=>r.key===k); if(d) total+=d.salary; });
+  return total;
+}
+function switchStaffTab(cat){
+  staffTab=cat;
+  document.querySelectorAll('#staffSubtabs .subtab-btn').forEach(b=>b.classList.toggle('active', b.dataset.cat===cat));
+  renderStaff();
+}
+function renderStaff(){
+  if(!S) return;
+  document.getElementById('staffSub').textContent=fmtMoney(weeklyPayroll())+' / week total payroll';
+  const el=document.getElementById('staffContent');
+  if(!el) return;
+  if(staffTab==='employees') el.innerHTML=renderEmployeesTab();
+  else if(staffTab==='managers') el.innerHTML=renderManagersTab();
+  else el.innerHTML=renderDirectorsTab();
+}
+function renderEmployeesTab(){
+  const req=requiredStaff();
+  return `<div class="card" style="padding:6px 16px;">` + EMPLOYEE_ROLES.map(row=>{
+    const short=S.staff[row.key]<req[row.key];
+    return `<div class="staff-row">
+      <div>
+        <div class="card-title" style="font-size:14px;">${row.icon} ${row.label}</div>
+        <div class="card-meta">Need ${req[row.key]} · ${fmtMoney(row.salary)}/wk each</div>
+      </div>
+      <div class="staff-count ${short?'short':''}">${S.staff[row.key]}</div>
+      <div class="staff-btns">
+        <button class="circ-btn" onclick="hireStaff('${row.key}',-1)">−</button>
+        <button class="circ-btn" onclick="hireStaff('${row.key}',1)">+</button>
+        <button class="circ-btn" style="width:auto; border-radius:8px; padding:0 8px; font-size:10px;" onclick="hireStaff('${row.key}', ${req[row.key]}-S.staff['${row.key}'])">MAX</button>
+      </div>
+    </div>`;
+  }).join('') + `</div>`;
+}
+function renderManagersTab(){
+  return MANAGER_ROLES.map(m=>{
+    const owned=S.managers.has(m.key);
+    return `<div class="card">
+      <div class="card-row">
+        <div>
+          <div class="card-title">${m.icon} ${m.name}</div>
+          <div class="card-meta">${fmtMoney(m.salary)}/wk salary</div>
+        </div>
+        ${owned? '<div class="tag active">Hired</div>' : `<button class="mini-btn accent" ${S.cash<m.cost?'disabled':''} onclick="hireManager('${m.key}')">${fmtMoney(m.cost)}</button>`}
+      </div>
+      <div class="card-meta" style="margin-top:6px;">${m.effect}</div>
+      ${owned && m.configurable? `<div class="card-row" style="margin-top:10px;">
+        <div class="card-meta">${m.configurable.label}: <b style="color:var(--gold);">${S.managerSettings[m.key]}${m.configurable.unit}</b></div>
+        <button class="mini-btn" onclick="openManagerSettings('${m.key}')">⚙ Configure</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+function openManagerSettings(key){
+  const m=MANAGER_ROLES.find(r=>r.key===key);
+  const c=m.configurable;
+  const current=S.managerSettings[key];
+  const body=`<div class="modal-head"><h3>${m.icon} ${m.name}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="card-meta">${m.effect}</div>
+    <label class="f-label">${c.label}</label>
+    <input type="text" id="mgrSettingLabel" readonly value="${current}${c.unit}" style="text-align:center; font-family:'Space Mono',monospace; font-size:20px; color:var(--gold); border:none; background:transparent; width:100%;">
+    <div class="slider-row">
+      <input type="range" id="mgrSettingSlider" min="${c.min}" max="${c.max}" step="${c.step}" value="${current}" oninput="updateManagerSettingPreview('${key}')">
+      <div class="slider-labels"><span>${c.min}${c.unit}</span><span>${c.max}${c.unit}</span></div>
+    </div>
+    <button class="buy-btn" style="margin-top:16px;" onclick="saveManagerSetting('${key}')">Save</button>`;
+  showModal(body);
+}
+function updateManagerSettingPreview(key){
+  const m=MANAGER_ROLES.find(r=>r.key===key);
+  const val=document.getElementById('mgrSettingSlider').value;
+  document.getElementById('mgrSettingLabel').value=val+m.configurable.unit;
+}
+function saveManagerSetting(key){
+  const val=parseInt(document.getElementById('mgrSettingSlider').value);
+  S.managerSettings[key]=val;
+  closeModal(); renderAll(); switchStaffTab('managers');
+  toast(`${MANAGER_ROLES.find(r=>r.key===key).name} setting updated`);
+}
+function renderDirectorsTab(){
+  return DIRECTOR_ROLES.map(d=>{
+    const owned=S.directors.has(d.key);
+    return `<div class="card">
+      <div class="card-row">
+        <div>
+          <div class="card-title">${d.icon} ${d.name}</div>
+          <div class="card-meta">${fmtMoney(d.salary)}/wk salary</div>
+        </div>
+        ${owned? '<div class="tag hub">Hired</div>' : `<button class="mini-btn accent" ${S.cash<d.cost?'disabled':''} onclick="hireDirector('${d.key}')">${fmtMoney(d.cost)}</button>`}
+      </div>
+      <div class="card-meta" style="margin-top:6px;">${d.effect}</div>
+    </div>`;
+  }).join('');
+}
+function hireStaff(key, delta){
+  S.staff[key]=Math.max(0, S.staff[key]+delta);
+  renderAll();
+}
+function hireManager(key){
+  const m=MANAGER_ROLES.find(r=>r.key===key);
+  if(S.cash<m.cost || S.managers.has(key)) return;
+  S.cash-=m.cost;
+  S.managers.add(key);
+  pushFeedback('headline', `${S.name} hires a ${m.name} to sharpen operations.`);
+  renderAll();
+  toast(`${m.name} hired`);
+}
+function hireDirector(key){
+  const d=DIRECTOR_ROLES.find(r=>r.key===key);
+  if(S.cash<d.cost || S.directors.has(key)) return;
+  S.cash-=d.cost;
+  S.directors.add(key);
+  pushFeedback('headline', `${S.name} appoints a ${d.name} — analysts take notice.`);
+  renderAll();
+  toast(`${d.name} appointed`);
+}
+
+/* ---------------- HUBS / CITIES ---------------- */
+function renderHubs(){
+  document.getElementById('hubsSub').textContent=`${S.opened.size} opened · ${S.hubs.size} hubs`;
+  const list=document.getElementById('hubsList');
+  const opened=[...S.opened].map(cityById);
+  list.innerHTML = opened.map(c=>{
+    const isHub=S.hubs.has(c.id);
+    const routesHere=S.routes.filter(r=>r.from===c.id||r.to===c.id).length;
+    return `<div class="card">
+      <div class="card-row">
+        <div>
+          <div class="card-title">${c.name} ${isHub?'⭐':''}</div>
+          <div class="card-meta">${c.region} · ${routesHere} route${routesHere===1?'':'s'}</div>
+        </div>
+        ${isHub?'<div class="tag hub">Hub</div>':`<button class="mini-btn accent" onclick="onCityTap('${c.id}')">Make Hub</button>`}
+      </div>
+    </div>`;
+  }).join('') + `<div class="card" style="border-style:dashed; text-align:center; color:var(--slate); cursor:pointer;" onclick="switchView('map')">+ Open a new destination from the map</div>`;
+}
+
+/* ---------------- FINANCE ---------------- */
+function renderFinance(){
+  document.getElementById('finCash').textContent=fmtMoney(S.cash);
+  const fleetValue=S.fleet.reduce((sum,ac)=>{
+    const t=AIRCRAFT_TYPES.find(t=>t.key===ac.type); return sum+t.cost*0.55;
+  },0);
+  const debt=S.loan? S.loan.balance : 0;
+  document.getElementById('finWorth').textContent=fmtMoney(S.cash+fleetValue-debt);
+  const last=S.log[S.log.length-1];
+  document.getElementById('finRev').textContent = last? fmtMoney(last.revenue) : '$0';
+  document.getElementById('finExp').textContent = last? fmtMoney(last.expense) : '$0';
+
+  let bankHtml=`
+    <div class="card-row">
+      <div class="card-title">Credit Score</div>
+      <div class="mono" style="color:var(--gold); font-weight:700;">${S.credit.score}/100</div>
+    </div>
+    <div style="background:var(--navy); border-radius:6px; height:8px; margin-top:8px; overflow:hidden;">
+      <div style="background:var(--gold); height:100%; width:${S.credit.score}%;"></div>
+    </div>
+    <div class="card-meta" style="margin-top:8px;">Built from how early you repay, how healthy your cash flow is, and how responsibly you carry debt.</div>`;
+
+  if(S.loan){
+    const bank=bankByKey(S.loan.bankKey);
+    bankHtml+=`
+    <div class="stat-grid" style="margin-top:14px;">
+      <div class="stat-box bad"><div class="sv mono">${fmtMoney(S.loan.balance)}</div><div class="sl">${bank.name} balance</div></div>
+      <div class="stat-box"><div class="sv mono">${(S.loan.rate*100).toFixed(1)}%</div><div class="sl">Annual rate</div></div>
+      <div class="stat-box"><div class="sv mono">${S.loan.weeksLeft}w</div><div class="sl">Term remaining</div></div>
+      <div class="stat-box"><div class="sv mono">${S.loan.termWeeks}w</div><div class="sl">Original term</div></div>
+    </div>
+    <button class="mini-btn accent" style="margin-top:12px; width:100%; padding:11px;" onclick="openRepayModal()">Repay Debt</button>`;
+  } else if(S.pendingLoan){
+    const bank=bankByKey(S.pendingLoan.bankKey);
+    bankHtml+=`<div class="card-meta" style="margin-top:12px; color:var(--gold);">Application pending with ${bank.name} — ${fmtMoney(S.pendingLoan.amount)} over ${S.pendingLoan.termWeeks} weeks. Decision by week ${S.pendingLoan.resolveWeek}.</div>`;
+  } else {
+    bankHtml+=`<button class="mini-btn accent" style="margin-top:12px; width:100%; padding:11px;" onclick="openBankList()">Apply for a Loan</button>`;
+  }
+  document.getElementById('bankCard').innerHTML=bankHtml;
+
+  const logEl=document.getElementById('financeLog');
+  if(S.log.length===0){
+    logEl.innerHTML=`<div class="card-meta" style="padding:14px 0;">No weeks flown yet.</div>`;
+  } else {
+    logEl.innerHTML=[...S.log].reverse().slice(0,20).map(l=>`
+      <div class="log-item"><span>Week ${l.week}${l.interest?' · interest '+fmtMoney(l.interest):''}</span><span class="lv ${l.net>=0?'pos':'neg'}">${fmtMoney(l.net)}</span></div>
+    `).join('');
+  }
+}
+
+/* ---------------- HOSPITALITY ---------------- */
+function switchHospTab(cat){
+  hospTab=cat;
+  document.querySelectorAll('#hospSubtabs .subtab-btn').forEach(b=>b.classList.toggle('active', b.dataset.cat===cat));
+  renderHospitality();
+}
+function hospitalitySatisfaction(){
+  const h=S.hospitality;
+  let score=h.lastFoodSatisfaction;
+  if(h.foodPrice===0) score+=0.10; // free meals delight passengers
+  h.equipment.forEach(k=>{
+    const eq=EQUIPMENT_ITEMS.find(e=>e.key===k);
+    if(eq) score+=eq.satisfaction;
+  });
+  return Math.min(1, score);
+}
+function renderHospitality(){
+  if(!S) return;
+  const el=document.getElementById('hospContent');
+  if(!el) return;
+  if(hospTab==='food') el.innerHTML=renderFoodTab();
+  else if(hospTab==='equipment') el.innerHTML=renderEquipmentTab();
+  else el.innerHTML=renderShoppingTab();
+}
+function renderFoodTab(){
+  const h=S.hospitality;
+  let html=`<div class="subtabs" style="margin-top:0;">
+    <button class="subtab-btn ${h.foodMode==='catering'?'active':''}" onclick="setFoodMode('catering')">🚚 Catering Service</button>
+    <button class="subtab-btn ${h.foodMode==='selfstock'?'active':''}" onclick="setFoodMode('selfstock')">📦 Self-Stock</button>
+  </div>`;
+
+  if(h.foodMode==='catering'){
+    const current=CATERING_COMPANIES.find(c=>c.key===h.cateringCompany);
+    html+=`<div class="card-meta" style="margin-top:14px;">Pick a catering company. They handle everything — you just pay per passenger served, no stock to manage.</div>`;
+    html+=CATERING_COMPANIES.map(c=>{
+      const active=c.key===h.cateringCompany;
+      return `<div class="card" style="margin-top:10px; ${active?'border-color:var(--gold);':''}">
+        <div class="card-row">
+          <div>
+            <div class="card-title">${c.icon} ${c.name}</div>
+            <div class="card-meta">${fmtMoney(c.costPerPax)} / passenger served</div>
+          </div>
+          ${active?'<div class="tag active">In use</div>' : `<button class="mini-btn accent" onclick="setCateringCompany('${c.key}')">Switch</button>`}
+        </div>
+        <div class="card-meta" style="margin-top:6px;">${c.desc}</div>
+      </div>`;
+    }).join('');
+    html+=foodPricingCard(current.costPerPax, `Serving via ${current.name}`);
+  } else {
+    const item=FOOD_ITEMS.find(i=>i.key===h.selfStock.itemKey);
+    html+=`<div class="card-meta" style="margin-top:14px;">Buy your own food in bulk and manage the galley yourself. Cheaper long-run, but run out of stock and passengers go unfed that week.</div>`;
+    html+=FOOD_ITEMS.map(it=>{
+      const active=it.key===h.selfStock.itemKey;
+      return `<div class="card" style="margin-top:10px; ${active?'border-color:var(--gold);':''}">
+        <div class="card-row">
+          <div>
+            <div class="card-title">${it.icon} ${it.name}</div>
+            <div class="card-meta">${fmtMoney(it.unitCost)} / unit to stock</div>
+          </div>
+          ${active?'<div class="tag active">In use</div>' : `<button class="mini-btn accent" onclick="setSelfStockItem('${it.key}')">Switch</button>`}
+        </div>
+        <div class="card-meta" style="margin-top:6px;">${it.desc}</div>
+      </div>`;
+    }).join('');
+    const restock500cost=Math.round(item.unitCost*500);
+    html+=`<div class="card" style="margin-top:10px;">
+      <div class="card-row">
+        <div>
+          <div class="card-title">Current Stock</div>
+          <div class="card-meta">${h.selfStock.stock.toLocaleString()} units of ${item.name}</div>
+        </div>
+        <button class="mini-btn accent" ${S.cash<restock500cost?'disabled':''} onclick="restockFood(500)">+500 (${fmtMoney(restock500cost)})</button>
+      </div>
+    </div>`;
+    html+=foodPricingCard(item.unitCost, `Stocking ${item.name}`);
+  }
+  return html;
+}
+function foodPricingCard(costPerPax, servingLabel){
+  const price=S.hospitality.foodPrice;
+  return `<div class="card" style="margin-top:10px;">
+    <div class="card-title">Meal Pricing</div>
+    <div class="card-meta" style="margin-top:4px;">${servingLabel}</div>
+    <div class="slider-row">
+      <div class="slider-labels"><span>Free (reputation boost)</span><span class="mono">${price===0?'FREE':'$'+price}</span></div>
+      <input type="range" min="0" max="${Math.max(4,Math.round(costPerPax*4))}" value="${price}" oninput="setFoodPrice(this.value)">
+      <div class="slider-labels"><span>$0</span><span>Paid add-on</span></div>
+    </div>
+    <div class="card-meta" style="margin-top:8px;">${price===0? 'Meals are free — costs the airline more per passenger, but boosts satisfaction and rating.' : 'Passengers pay for meals — offsets cost but earns less goodwill.'}</div>
+  </div>`;
+}
+function setFoodMode(mode){
+  S.hospitality.foodMode=mode;
+  renderHospitality();
+}
+function setCateringCompany(key){
+  S.hospitality.cateringCompany=key;
+  renderHospitality();
+}
+function setSelfStockItem(key){
+  S.hospitality.selfStock.itemKey=key;
+  renderHospitality();
+}
+function restockFood(units){
+  const item=FOOD_ITEMS.find(i=>i.key===S.hospitality.selfStock.itemKey);
+  const cost=Math.round(item.unitCost*units);
+  if(S.cash<cost) return;
+  S.cash-=cost;
+  S.hospitality.selfStock.stock+=units;
+  renderAll();
+  toast(`Stocked ${units} ${item.name}`);
+}
+function setFoodPrice(val){
+  S.hospitality.foodPrice=parseInt(val);
+  renderHospitality();
+}
+function renderEquipmentTab(){
+  return EQUIPMENT_ITEMS.map(eq=>{
+    const owned=S.hospitality.equipment.has(eq.key);
+    return `<div class="card">
+      <div class="card-row">
+        <div>
+          <div class="card-title">${eq.icon} ${eq.name}</div>
+          <div class="card-meta">+${Math.round(eq.satisfaction*100)}% passenger satisfaction</div>
+        </div>
+        ${owned? '<div class="tag active">Owned</div>' : `<button class="mini-btn accent" ${S.cash<eq.cost?'disabled':''} onclick="buyEquipment('${eq.key}')">${fmtMoney(eq.cost)}</button>`}
+      </div>
+      <div class="card-meta" style="margin-top:6px;">${eq.desc}</div>
+    </div>`;
+  }).join('');
+}
+function buyEquipment(key){
+  const eq=EQUIPMENT_ITEMS.find(e=>e.key===key);
+  if(S.cash<eq.cost || S.hospitality.equipment.has(key)) return;
+  S.cash-=eq.cost;
+  S.hospitality.equipment.add(key);
+  renderAll();
+  toast(`${eq.name} purchased`);
+}
+function renderShoppingTab(){
+  return SHOP_ITEMS.map(item=>{
+    const st=S.hospitality.shop[item.key];
+    if(!st.invested){
+      return `<div class="card">
+        <div class="card-row">
+          <div>
+            <div class="card-title">${item.icon} ${item.name}</div>
+            <div class="card-meta">${item.desc}</div>
+          </div>
+          <button class="mini-btn accent" ${S.cash<item.investCost?'disabled':''} onclick="investShop('${item.key}')">Invest ${fmtMoney(item.investCost)}</button>
+        </div>
+      </div>`;
+    }
+    const restockCost10=item.unitCost*50;
+    return `<div class="card">
+      <div class="card-row">
+        <div>
+          <div class="card-title">${item.icon} ${item.name}</div>
+          <div class="card-meta">Stock: ${st.stock} units · Cost ${fmtMoney(item.unitCost)}/unit</div>
+        </div>
+        <button class="mini-btn" ${S.cash<restockCost10?'disabled':''} onclick="restockShop('${item.key}',50)">+50 units</button>
+      </div>
+      <div class="slider-row">
+        <div class="slider-labels"><span>Price</span><span class="mono">$${st.price}</span></div>
+        <input type="range" min="${Math.max(1,Math.round(item.basePrice*0.4))}" max="${Math.round(item.basePrice*2.2)}" value="${st.price}" oninput="setShopPrice('${item.key}', this.value)">
+      </div>
+      <div class="card-meta" style="margin-top:6px;">Baseline demand price: $${item.basePrice}. Higher prices sell less per passenger but earn more per sale.</div>
+    </div>`;
+  }).join('');
+}
+function investShop(key){
+  const item=SHOP_ITEMS.find(i=>i.key===key);
+  const st=S.hospitality.shop[key];
+  if(S.cash<item.investCost || st.invested) return;
+  S.cash-=item.investCost;
+  st.invested=true;
+  renderAll();
+  toast(`${item.name} concession opened`);
+}
+function restockShop(key,units){
+  const item=SHOP_ITEMS.find(i=>i.key===key);
+  const st=S.hospitality.shop[key];
+  const cost=item.unitCost*units;
+  if(S.cash<cost) return;
+  S.cash-=cost;
+  st.stock+=units;
+  renderAll();
+  toast(`Restocked ${units} units of ${item.name}`);
+}
+function setShopPrice(key,val){
+  S.hospitality.shop[key].price=parseInt(val);
+  renderHospitality();
+}
+/* Called from advanceWeek: returns {revenue, cogs} for concessions across all shop items, consuming stock */
+function runConcessions(totalPax){
+  let revenue=0, cogs=0;
+  SHOP_ITEMS.forEach(item=>{
+    const st=S.hospitality.shop[item.key];
+    if(!st.invested || st.stock<=0) return;
+    const priceRatio = st.price/item.basePrice;
+    const priceFactor = Math.max(0.3, Math.min(1.8, 1.6-priceRatio));
+    const wantToBuy = Math.round(totalPax*item.demandBase*priceFactor);
+    const sold=Math.min(wantToBuy, st.stock);
+    st.stock-=sold;
+    revenue+=sold*st.price;
+    cogs+=sold*item.unitCost;
+  });
+  return {revenue, cogs};
+}
+
+/* ---------------- PRESS / RATING ---------------- */
+const NEWS_HANDLES=['@AeroWireDaily','@SkylineBusinessDesk','@RunwayReport','@GlobalCarrierNews','@TheDepartureBoard'];
+const FAKE_HANDLES=['@wanderlust_maya','@davetravels','@milehighmike','@thejetsetter','@homeboundhannah','@carryon_carla','@skyler.explores','@frequent_flyer_fox','@backpackbrian','@windowseatwendy','@aisle_or_die','@runwayrachel','@globalgus','@tarmac_tina','@boardingpass_bo'];
+const PHOTO_THEMES=[
+  {emoji:'✈️', grad:'linear-gradient(135deg,#1c3c53,#39d6c8)'},
+  {emoji:'🏙️', grad:'linear-gradient(135deg,#2a1c53,#f2b955)'},
+  {emoji:'🌅', grad:'linear-gradient(135deg,#53291c,#f2795a)'},
+  {emoji:'🧳', grad:'linear-gradient(135deg,#1c5333,#39d6c8)'},
+  {emoji:'🛫', grad:'linear-gradient(135deg,#3c1c53,#7c93a8)'},
+  {emoji:'🥂', grad:'linear-gradient(135deg,#53401c,#f2b955)'},
+];
+const AVATAR_COLORS=['#f2b955','#39d6c8','#ec6a5e','#a06cf2','#5ecb6a','#f27ab0','#5ba8f2'];
+const REACTION_POS=["So agree with this! 🙌","Just booked because of this ✈️","Been saying this for weeks!","Underrated airline honestly"];
+const REACTION_NEG=["Had a rough experience too 😕","Hope they fix this soon","Not surprised tbh","Following this closely"];
+const REACTION_NEUTRAL=["Interesting update","Good to know!","Wow, didn't expect that","Noted 👀"];
+function pushFeedback(type, text, sentiment){
+  sentiment=sentiment||'neutral';
+  const isHeadline=type==='headline';
+  const handle=isHeadline? NEWS_HANDLES[Math.floor(Math.random()*NEWS_HANDLES.length)] : FAKE_HANDLES[Math.floor(Math.random()*FAKE_HANDLES.length)];
+  const theme=PHOTO_THEMES[Math.floor(Math.random()*PHOTO_THEMES.length)];
+  const avatarColor=AVATAR_COLORS[Math.floor(Math.random()*AVATAR_COLORS.length)];
+  const pool=sentiment==='pos'?REACTION_POS:(sentiment==='neg'?REACTION_NEG:REACTION_NEUTRAL);
+  const commentCount=1+Math.floor(Math.random()*2);
+  const subComments=[];
+  for(let i=0;i<commentCount;i++){
+    subComments.push({handle:FAKE_HANDLES[Math.floor(Math.random()*FAKE_HANDLES.length)], text:pool[Math.floor(Math.random()*pool.length)]});
+  }
+  S.feedback.push({week:S.week, type, text, sentiment, handle, theme, avatarColor, likes:10+Math.floor(Math.random()*490), subComments});
+}
+const POSITIVE_COMMENTS=[
+  "\"Smooth flight and friendly crew — would fly again.\" — verified passenger",
+  "\"Great value for the price of the ticket.\" — frequent flyer",
+  "\"The onboard menu was a nice surprise.\" — passenger review",
+  "\"Cabin crew were sharp and attentive.\" — passenger review",
+  "\"Easily the best legroom I've had in economy.\" — passenger review",
+  "\"Booked again the same week — that says it all.\" — frequent flyer",
+];
+const NEGATIVE_COMMENTS=[
+  "\"Flight felt understaffed and rushed.\" — passenger review",
+  "\"Tickets are getting expensive for what you get.\" — frequent flyer",
+  "\"Food options were pretty thin.\" — passenger review",
+  "\"Crew seemed stretched thin the whole flight.\" — passenger review",
+  "\"Nothing wrong exactly, just nothing special.\" — passenger review",
+  "\"Boarding was chaotic and slow.\" — passenger review",
+];
+function computeRating(){
+  const routes=S.routes.filter(r=>r.aircraftId);
+  let avgLoad=0;
+  if(routes.length>0){
+    const total=routes.reduce((s,r)=>s+estimateRoute(r).loadFactor,0);
+    avgLoad=total/routes.length;
+  }
+  const staffComp=Math.max(0,Math.min(1,(staffEfficiency()-0.55)/0.45));
+  const hospComp=hospitalitySatisfaction();
+  let priceComp=1;
+  if(routes.length>0){
+    const avgRatio=routes.reduce((s,r)=>{
+      const a=cityById(r.from), b=cityById(r.to);
+      return s+(r.price/baselinePrice(dist(a,b)));
+    },0)/routes.length;
+    priceComp=Math.max(0,Math.min(1, 1-Math.abs(avgRatio-1)*0.6));
+  }
+  const composite=(avgLoad*0.35 + staffComp*0.25 + hospComp*0.25 + priceComp*0.15);
+  return Math.round((1+4*composite)*10)/10;
+}
+function starString(rating){
+  const full=Math.round(rating);
+  return '★'.repeat(full)+'☆'.repeat(5-full);
+}
+function generateWeeklyFeedback(){
+  const r=S.rating;
+  const posChance=Math.max(0.1, Math.min(0.9, (r-1)/4));
+  const count = S.routes.length>0 ? 2 : 0;
+  for(let i=0;i<count;i++){
+    const isPos=Math.random()<posChance;
+    const pool=isPos?POSITIVE_COMMENTS:NEGATIVE_COMMENTS;
+    const text=pool[Math.floor(Math.random()*pool.length)];
+    pushFeedback('comment', text, isPos?'pos':'neg');
+  }
+  if(S.week%4===0){
+    pushFeedback('headline', `Industry roundup: ${S.name} holds a ${r.toFixed(1)}-star rating with ${S.fleet.length} aircraft across ${S.routes.length} routes.`);
+  }
+}
+let pressTab='headlines';
+function switchPressTab(cat){
+  pressTab=cat;
+  document.querySelectorAll('#pressSubtabs .subtab-btn').forEach(b=>b.classList.toggle('active', b.dataset.cat===cat));
+  renderNews();
+}
+function igPostCard(f){
+  const isHeadline=f.type==='headline';
+  const initials=f.handle.replace('@','').slice(0,2).toUpperCase();
+  return `<div class="ig-card">
+    <div class="ig-head">
+      <div class="ig-avatar" style="background:${f.avatarColor||'#39d6c8'};">${isHeadline?'📰':initials}</div>
+      <div>
+        <div class="ig-handle">${f.handle}</div>
+        <div class="ig-time">WEEK ${f.week}${isHeadline?' · HEADLINE':''}</div>
+      </div>
+    </div>
+    <div class="ig-body">
+      <div class="ig-photo" style="background:${f.theme.grad};">${f.theme.emoji}</div>
+      <div class="ig-caption">
+        ${isHeadline? `<div class="ig-title">${f.text}</div>` : `<div class="ig-text">${f.text}</div>`}
+        <div class="ig-comments">
+          ${f.subComments.map(c=>`<div class="ig-comment"><b>${c.handle}</b> ${c.text}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="ig-stats">
+      <span>❤️ ${f.likes}</span>
+      <span>💬 ${f.subComments.length}</span>
+    </div>
+  </div>`;
+}
+function renderNews(){
+  if(!S) return;
+  const feed=document.getElementById('newsFeed');
+  if(!feed) return;
+  const wanted = pressTab==='headlines' ? 'headline' : 'comment';
+  const items=[...S.feedback].reverse().filter(f=>f.type===wanted).slice(0,40);
+  if(items.length===0){
+    feed.innerHTML = pressTab==='headlines'
+      ? emptyState('📰','No headlines yet','Open routes, launch hubs, and grow your fleet to start making news.')
+      : emptyState('📱','No posts yet','Fly a few weeks with passengers aboard to start seeing what people are saying.');
+    return;
+  }
+  feed.innerHTML=items.map(igPostCard).join('');
+}
+
+/* ---------------- ADVANCE WEEK ---------------- */
+function advanceWeek(){
+  if(S.directors.has('operations')){
+    const req=requiredStaff();
+    EMPLOYEE_ROLES.forEach(role=>{
+      if(S.staff[role.key]<req[role.key]) S.staff[role.key]=req[role.key];
+    });
+  }
+  let revenue=0, fuelExp=0, maintExp=0, feeExp=0, totalPax=0;
+  S.routes.forEach(r=>{
+    const est=estimateRoute(r);
+    revenue+=est.revenue||0;
+    fuelExp+=est.fuelCost||0;
+    maintExp+=est.maint||0;
+    totalPax+=est.passengers||0;
+  });
+
+  // aircraft wear: flying wears them down faster than sitting idle; leased aircraft wear faster still
+  S.fleet.forEach(ac=>{
+    const route=S.routes.find(r=>r.aircraftId===ac.id);
+    const est=route? estimateRoute(route) : null;
+    const flightsWeek=est? (est.flightsWeek||0) : 0;
+    const wear=(0.4 + flightsWeek*0.12) * (ac.leased?1.5:1);
+    ac.condition=Math.max(0, (ac.condition!==undefined?ac.condition:100)-wear);
+  });
+  // maintenance manager: auto-service any aircraft below its configured service threshold
+  if(S.managers.has('maintenance')){
+    const threshold=S.managerSettings.maintenance;
+    S.fleet.forEach(ac=>{
+      if(ac.condition<threshold){
+        const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+        const missing=100-ac.condition;
+        const cost=Math.round(missing*type.cost*0.0003*(ac.leased?1.3:1));
+        if(S.cash>=cost){ S.cash-=cost; ac.condition=100; }
+      }
+    });
+  }
+  // leased aircraft: weekly cost, term countdown, auto-return on expiry
+  let leaseExp=0;
+  const expiredLeases=[];
+  S.fleet.forEach(ac=>{
+    if(!ac.leased) return;
+    leaseExp+=ac.weeklyLeaseCost;
+    ac.leaseWeeksLeft--;
+    if(ac.leaseWeeksLeft>0 && isLeaseRenewable(ac)){
+      if(S.managers.has('negotiations')){
+        const extendWeeks=Math.max(LEASE_MIN_WEEKS, Math.min(LEASE_MAX_WEEKS, S.managerSettings.negotiations));
+        const renewalNumber=ac.renewalCount+1;
+        const fee=leaseRenewalFee(ac.weeklyLeaseCost, extendWeeks, renewalNumber);
+        const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+        if(S.cash>=fee.total){
+          S.cash-=fee.total;
+          ac.renewalCount=renewalNumber;
+          ac.leaseWeeksLeft=extendWeeks;
+          ac.leaseTermWeeks=extendWeeks;
+          ac.renewalNotified=false;
+          toast(`Negotiations Manager renewed ${type.name}'s lease by ${extendWeeks} weeks (${fmtMoney(fee.total)})`);
+        } else if(!ac.renewalNotified){
+          ac.renewalNotified=true;
+          toast(`${type.name}'s lease is eligible for renewal, but funds are short for auto-renewal`);
+        }
+      } else if(!ac.renewalNotified){
+        ac.renewalNotified=true;
+        const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+        toast(`${type.name}'s lease is eligible for renewal`);
+      }
+    }
+    if(ac.leaseWeeksLeft<=0) expiredLeases.push(ac.id);
+  });
+  expiredLeases.forEach(id=>{
+    const idx=S.fleet.findIndex(a=>a.id===id);
+    if(idx<0) return;
+    const ac=S.fleet[idx];
+    S.leasedTaken.delete(ac.leaseId);
+    const type=AIRCRAFT_TYPES.find(t=>t.key===ac.type);
+    S.fleet.splice(idx,1);
+    pushFeedback('headline', `${S.name}'s leased ${type.name} term ends — returned to the lessor.`);
+    toast(`Lease on ${type.name} expired and was returned`);
+  });
+
+  S.opened.forEach(id=>{
+    feeExp += S.hubs.has(id) ? 3000 : 1200;
+  });
+  const payroll=weeklyPayroll();
+
+  // hospitality manager: auto-restock self-stocked food and shop concessions BEFORE serving/selling
+  if(S.managers.has('hospitality')){
+    const restockTarget=S.managerSettings.hospitality;
+    if(S.hospitality.foodMode==='selfstock'){
+      const item=FOOD_ITEMS.find(i=>i.key===S.hospitality.selfStock.itemKey);
+      const target=Math.max(restockTarget, totalPax);
+      if(S.hospitality.selfStock.stock<target){
+        const need=target-S.hospitality.selfStock.stock;
+        const affordable=Math.min(need, Math.floor(S.cash/item.unitCost));
+        if(affordable>0){ S.cash-=affordable*item.unitCost; S.hospitality.selfStock.stock+=affordable; }
+      }
+    }
+    SHOP_ITEMS.forEach(item=>{
+      const st=S.hospitality.shop[item.key];
+      if(!st.invested) return;
+      const target=restockTarget;
+      if(st.stock<target){
+        const need=target-st.stock;
+        const affordable=Math.min(need, Math.floor(S.cash/item.unitCost));
+        if(affordable>0){ S.cash-=affordable*item.unitCost; st.stock+=affordable; }
+      }
+    });
+  }
+
+  // hospitality: food cost/revenue — catering (always fully served) or self-stock (limited by inventory)
+  let foodCost=0, mealsServed=0, foodSatisfaction=0.12;
+  if(S.hospitality.foodMode==='catering'){
+    const company=CATERING_COMPANIES.find(c=>c.key===S.hospitality.cateringCompany);
+    foodCost=company.costPerPax*totalPax;
+    mealsServed=totalPax;
+    foodSatisfaction=company.satisfaction;
+  } else {
+    const item=FOOD_ITEMS.find(i=>i.key===S.hospitality.selfStock.itemKey);
+    mealsServed=Math.min(totalPax, S.hospitality.selfStock.stock);
+    S.hospitality.selfStock.stock-=mealsServed;
+    foodCost=0; // already paid when stocked
+    const coverage=totalPax>0? mealsServed/totalPax : 1;
+    foodSatisfaction=item.satisfaction*coverage;
+    if(coverage<1) toast(`Ran short on ${item.name} — some passengers went unfed this week`);
+  }
+  S.hospitality.lastFoodSatisfaction=foodSatisfaction;
+  const foodRevenue=S.hospitality.foodPrice*mealsServed;
+
+  // hospitality: in-flight concessions
+  const shop=runConcessions(totalPax);
+
+  let interest=0;
+  if(S.loan){
+    interest=S.loan.balance*(S.loan.rate/52);
+    S.loan.balance+=interest;
+    S.loan.weeksLeft--;
+    if(S.loan.weeksLeft<=0 && S.loan.balance>0){
+      S.credit.score=Math.max(10, S.credit.score-15);
+      toast(`Loan term with ${bankByKey(S.loan.bankKey).name} expired with a balance still owed — credit score dropped`);
+      pushFeedback('headline', `${S.name}'s loan term lapses with a balance still owed — lenders take note.`);
+      S.loan.weeksLeft=S.loan.termWeeks; // lender re-underwrites at current (worse) terms
+    }
+  }
+  if(S.pendingLoan && S.week>=S.pendingLoan.resolveWeek){
+    const bank=bankByKey(S.pendingLoan.bankKey);
+    const result=evaluateLoanApplication(bank, S.pendingLoan.amount, S.pendingLoan.termWeeks);
+    if(result.approved){
+      S.cash+=S.pendingLoan.amount;
+      S.loan={bankKey:bank.key, principal:S.pendingLoan.amount, balance:S.pendingLoan.amount, rate:loanRateFor(bank), termWeeks:S.pendingLoan.termWeeks, weeksLeft:S.pendingLoan.termWeeks};
+      pushFeedback('headline', `${bank.name} approves a ${fmtMoney(S.pendingLoan.amount)} loan for ${S.name}.`);
+      toast(`${bank.name} approved your loan application`);
+    } else {
+      toast(`${bank.name} rejected your application: ${result.reason}`);
+    }
+    S.pendingLoan=null;
+  }
+  // passive credit score drift based on financial health
+  const loanBank = S.loan? bankByKey(S.loan.bankKey) : null;
+  const debtRatio = S.loan && loanBank? S.loan.balance/creditLimitFor(loanBank) : 0;
+  if(S.cash<0) S.credit.score=Math.max(5, S.credit.score-1);
+  else if(debtRatio>0.9) S.credit.score=Math.max(5, S.credit.score-0.3);
+  else S.credit.score=Math.min(100, S.credit.score+0.15);
+  S.credit.score=Math.round(S.credit.score*10)/10;
+
+  const totalRevenue=revenue+foodRevenue+shop.revenue;
+  const expense=fuelExp+maintExp+feeExp+payroll+interest+foodCost+shop.cogs+leaseExp;
+  const net=totalRevenue-expense;
+  S.cash+=net;
+  const avgLoad=S.routes.length>0? S.routes.reduce((s,r)=>s+estimateRoute(r).loadFactor,0)/S.routes.length : 0;
+  S.log.push({week:S.week, revenue:totalRevenue, expense, net, interest, totalPax, avgLoad});
+  S.rating=computeRating();
+  generateWeeklyFeedback();
+  S.week++;
+  renderAll();
+  toast(`Week complete — ${net>=0?'+':''}${fmtMoney(net)}`);
+  if(currentView==='finance') switchView('finance');
+}
+
+/* ---------------- NEW GAME ---------------- */
+function confirmNewGame(){
+  const body=`<div class="modal-head"><h3>Start a New Airline?</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <p style="color:var(--slate); font-size:13px; line-height:1.5;">This will shut down <b style="color:var(--white);">${S.name}</b> for good — fleet, routes, cash and history all gone. There's no undo.</p>
+    <button class="buy-btn" style="margin-top:16px; background:var(--red); color:#2a0a06;" onclick="resetGame()">Yes, start over</button>
+    <button class="mini-btn" style="margin-top:10px; width:100%; padding:12px;" onclick="closeModal()">Cancel</button>`;
+  showModal(body);
+}
+function resetGame(){
+  closeModal();
+  S=null;
+  cfg={name:'', color:LOGO_COLORS[0], icon:LOGO_ICONS[0], home:null};
+  hospTab='food';
+  staffTab='employees';
+  pressTab='headlines';
+  shopFilter='All';
+  leaseFilter='All';
+  dashboardVisible=true;
+  gameMap.state.initialized=false;
+  setupMap.state.initialized=false;
+  currentView='map';
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-map').classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.view==='map'));
+  document.getElementById('nameInput').value='';
+  document.getElementById('game').style.display='none';
+  document.getElementById('setup').style.display='block';
+  document.getElementById('setup').scrollTop=0;
+  buildSetup();
+  setupMap.init(null);
+}
+
+/* ---------------- BANK / LOANS ---------------- */
+function openBankList(){
+  let body=`<div class="modal-head"><h3>Choose a Lender</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="card-meta">Your credit score: ${S.credit.score}/100</div>`;
+  body+=BANKS.map(bank=>{
+    const limit=creditLimitFor(bank);
+    const rate=loanRateFor(bank);
+    const qualifies=S.credit.score>=bank.minScore;
+    return `<div class="shop-card" style="${qualifies?'':'opacity:0.55;'}">
+      <div class="card-row"><div class="card-title">${bank.icon} ${bank.name}</div></div>
+      <div class="card-meta" style="margin-top:4px;">${bank.tagline}</div>
+      <div class="shop-stats">
+        <div>LIMIT<b>${fmtMoney(limit)}</b></div>
+        <div>RATE<b>~${(rate*100).toFixed(1)}%</b></div>
+        <div>DECISION<b>${bank.approvalWeeks===0?'Instant':bank.approvalWeeks+' week'}</b></div>
+      </div>
+      <div class="card-meta" style="margin-top:4px;">Requires credit score ${bank.minScore}+</div>
+      <button class="buy-btn" style="margin-top:10px;" ${qualifies?'':'disabled'} onclick="openLoanProposal('${bank.key}')">${qualifies?'Apply':'Score too low'}</button>
+    </div>`;
+  }).join('');
+  showModal(body);
+}
+function openLoanProposal(bankKey){
+  const bank=bankByKey(bankKey);
+  const limit=creditLimitFor(bank);
+  const defAmount=Math.round(limit/2);
+  const body=`<div class="modal-head"><h3>${bank.icon} ${bank.name}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="card-meta">${bank.tagline}</div>
+    <label class="f-label">Amount to borrow</label>
+    <input type="text" id="loanAmountLabel" readonly value="${fmtMoney(defAmount)}" style="text-align:center; font-family:'Space Mono',monospace; font-size:20px; color:var(--gold); border:none; background:transparent; width:100%;">
+    <div class="slider-row">
+      <input type="range" id="loanSlider" min="0" max="${limit}" step="${Math.max(1,Math.round(limit/200))}" value="${defAmount}" oninput="updateLoanProposal('${bankKey}')">
+      <div class="slider-labels"><span>$0</span><span>${fmtMoney(limit)}</span></div>
+    </div>
+    <label class="f-label">Loan term</label>
+    <input type="text" id="loanTermLabel" readonly value="26 weeks" style="text-align:center; font-family:'Space Mono',monospace; font-size:16px; color:var(--cyan); border:none; background:transparent; width:100%;">
+    <div class="slider-row">
+      <input type="range" id="termSlider" min="8" max="52" step="1" value="26" oninput="updateLoanProposal('${bankKey}')">
+      <div class="slider-labels"><span>8w</span><span>52w</span></div>
+    </div>
+    <div id="loanProposalPreview" class="stat-grid" style="margin-top:14px;"></div>
+    <button class="buy-btn" style="margin-top:14px;" onclick="submitLoanProposal('${bankKey}')">Send Proposal</button>
+    <div id="loanResult" style="margin-top:12px;"></div>`;
+  showModal(body);
+  updateLoanProposal(bankKey);
+}
+function updateLoanProposal(bankKey){
+  const bank=bankByKey(bankKey);
+  const amount=parseInt(document.getElementById('loanSlider').value);
+  const term=parseInt(document.getElementById('termSlider').value);
+  document.getElementById('loanAmountLabel').value=fmtMoney(amount);
+  document.getElementById('loanTermLabel').value=term+' weeks';
+  const rate=loanRateFor(bank);
+  const totalInterestEst=Math.round(amount*rate*(term/52));
+  document.getElementById('loanProposalPreview').innerHTML=`
+    <div class="stat-box gold"><div class="sv mono">${(rate*100).toFixed(1)}%</div><div class="sl">Annual rate</div></div>
+    <div class="stat-box bad"><div class="sv mono">${fmtMoney(totalInterestEst)}</div><div class="sl">Est. total interest</div></div>`;
+}
+function submitLoanProposal(bankKey){
+  const bank=bankByKey(bankKey);
+  const amount=parseInt(document.getElementById('loanSlider').value);
+  const term=parseInt(document.getElementById('termSlider').value);
+  const result=evaluateLoanApplication(bank, amount, term);
+  const resultEl=document.getElementById('loanResult');
+  if(!result.approved){
+    resultEl.innerHTML=`<p style="color:var(--red); font-size:12px;">Rejected: ${result.reason}</p>`;
+    return;
+  }
+  if(bank.approvalWeeks===0){
+    S.cash+=amount;
+    S.loan={bankKey:bank.key, principal:amount, balance:amount, rate:loanRateFor(bank), termWeeks:term, weeksLeft:term};
+    pushFeedback('headline', `${bank.name} approves a ${fmtMoney(amount)} loan for ${S.name}.`);
+    closeModal(); renderAll(); switchView('finance');
+    toast(`Approved — ${fmtMoney(amount)} from ${bank.name}`);
+  } else {
+    S.pendingLoan={bankKey:bank.key, amount, termWeeks:term, resolveWeek:S.week+bank.approvalWeeks};
+    closeModal(); renderAll(); switchView('finance');
+    toast(`Application submitted to ${bank.name} — decision in ${bank.approvalWeeks} week(s)`);
+  }
+}
+function openRepayModal(){
+  const bank=bankByKey(S.loan.bankKey);
+  const maxRepay=Math.min(S.cash, S.loan.balance);
+  const body=`<div class="modal-head"><h3>Repay ${bank.name}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="card-meta">Balance: ${fmtMoney(S.loan.balance)} · Cash on hand: ${fmtMoney(S.cash)}</div>
+    <div class="card-meta" style="margin-top:2px;">${S.loan.weeksLeft} week${S.loan.weeksLeft===1?'':'s'} left on this loan's term</div>
+    <label class="f-label">Amount to repay</label>
+    <input type="text" id="repayAmountLabel" readonly value="${fmtMoney(maxRepay)}" style="text-align:center; font-family:'Space Mono',monospace; font-size:20px; color:var(--cyan); border:none; background:transparent; width:100%;">
+    <div class="slider-row">
+      <input type="range" id="repaySlider" min="0" max="${Math.round(maxRepay)}" step="${Math.max(1,Math.round(maxRepay/200))}" value="${Math.round(maxRepay)}" oninput="updateRepaySlider(this.value)">
+      <div class="slider-labels"><span>$0</span><span>${fmtMoney(maxRepay)}</span></div>
+    </div>
+    ${maxRepay>=S.loan.balance?`<p style="color:var(--cyan); font-size:12px; margin-top:12px;">Paying this off in full now, ${S.loan.weeksLeft} weeks early, will boost your credit score.</p>`:''}
+    <button class="buy-btn" style="margin-top:14px;" onclick="repayLoan()">Repay</button>`;
+  showModal(body);
+}
+function updateRepaySlider(val){
+  document.getElementById('repayAmountLabel').value=fmtMoney(parseInt(val));
+}
+function repayLoan(){
+  const amount=Math.min(parseInt(document.getElementById('repaySlider').value), S.cash, S.loan.balance);
+  if(amount<=0){ toast('Choose an amount first'); return; }
+  const bank=bankByKey(S.loan.bankKey);
+  S.cash-=amount;
+  S.loan.balance-=amount;
+  if(S.loan.balance<1){
+    const earlyWeeks=S.loan.weeksLeft;
+    const gain=Math.max(1, Math.min(20, Math.round(earlyWeeks/S.loan.termWeeks*20)));
+    S.credit.score=Math.min(100, S.credit.score+gain);
+    S.loan=null;
+    pushFeedback('headline', `${S.name} pays off its ${bank.name} loan ${earlyWeeks} weeks early, earning goodwill with lenders.`);
+    closeModal(); renderAll(); switchView('finance');
+    toast(`Loan paid off early — credit score +${gain}`);
+  } else {
+    closeModal(); renderAll(); switchView('finance');
+    toast(`Repaid ${fmtMoney(amount)}`);
+  }
+}
+
+/* ---------------- MODAL / UTIL ---------------- */
+function showModal(html){
+  document.getElementById('modalBody').innerHTML=html;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modalBg').classList.remove('open');
+}
+document.getElementById('modalBg').addEventListener('click', e=>{
+  if(e.target.id==='modalBg') closeModal();
+});
+function emptyState(icon,title,sub){
+  return `<div class="empty-state"><div class="ee-icon">${icon}</div><div class="ee-title">${title}</div><div class="ee-sub">${sub}</div></div>`;
+}
+</script>
+</body>
+</html>

@@ -33,7 +33,15 @@ const WEBSITES = [
   "Cepatmakan",
   "Katakana",
   "Shuto run",
-  "2027 F1 Season Sim"
+  "2027 F1 Season Sim",
+  "Airline Manager",
+  "Cafe Master",
+  "Formulated",
+  "Glimmerwild",
+  "Katfish",
+  "Orchestra Choreographer",
+  "Scavezza Collo",
+  "Touchline"
 ];
 
 const CATALOG = {
