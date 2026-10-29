@@ -1,0 +1,75 @@
+SHUTO RUN — Setup & Usage Instructions
+========================================
+
+WHAT IT IS
+----------
+Shuto Run is a standalone single-file browser racing game set on a stylised
+Tokyo expressway. You drive endlessly through traffic, dodging cars for points,
+with real sampled engine audio, day/night lighting modes, and a full dashboard.
+
+All audio files must be placed in the SAME FOLDER as the HTML file.
+If the .wav files are absent the game falls back to a built-in synth engine.
+
+RUNNING THE GAME
+----------------
+1. Place the HTML and any .wav files together in one folder.
+2. Open shuto-run-standalone.html in a modern browser (Chrome/Edge recommended).
+   Firefox and Safari work but may have lower audio quality.
+
+   ⚠  Loading from a local file:// URL works fine on Chrome/Edge.
+      Firefox may block audio autoplay — click anywhere on the menu to unlock.
+
+3. On the start menu:
+     Car         — choose your car (different top speeds and redlines)
+     Transmission — Auto / Semi / Manual
+     Time of day — Night / Sunset / Dawn / Day (affects lighting)
+     Road        — Dry or Wet
+     Quality     — Low / Medium / High (affects shadows and resolution)
+
+4. Click START.
+
+CONTROLS
+--------
+  W / ↑          Accelerate
+  S / ↓          Brake / reverse
+  A / ←          Steer left
+  D / →          Steer right
+  Shift           Nitro (uses your nitro bar)
+  Q               Shift down (Semi/Manual only)
+  E               Shift up  (Semi/Manual only)
+  T               Cycle transmission mode (Auto → Semi → Manual)
+  C               Cycle camera (chase / bumper / hood)
+  V               Toggle wet road
+  1 / 2 / 3 / 4  Switch time of day on the fly
+  R or Enter      Retry after crash
+
+SCORING
+-------
+  • Drive as far as you can without crashing into traffic.
+  • Near misses (close passes) score bonus points multiplied by your combo.
+  • Your combo counter resets after 3 seconds with no close passes.
+  • Collecting near-miss points also charges your nitro bar.
+  • Hitting a vehicle at speed ends the run.
+  • Your best score is saved in the browser's local storage.
+
+ENGINE SOUND FORMAT
+-------------------
+The game reads any audio file whose name contains a number followed by "rpm"
+(e.g. 1000rpm, 2500rpm, 7000rpm) and blends between adjacent samples in real
+time. The limiter sound must have "lim" in its filename (engine_lim.wav).
+
+Name your files exactly as listed above or the auto-fetch will not find them.
+The game also still accepts the old drag-and-drop file picker if you prefer.
+
+TIPS
+----
+  • In Auto mode, the car shifts itself focus on steering and nitro.
+  • In Semi mode, you must shift up manually but the car downshifts for you.
+  • Manual mode: you control every gear change. Rev-matching matters.
+  • Wet road reduces grip and makes high-speed cornering harder.
+  • High quality mode adds bloom and higher-resolution shadows. 
+  • The GT-R Nismo has all-wheel drive (higher grip stat).
+
+CREDITS
+-------
+  Three.js r164 — 3D rendering

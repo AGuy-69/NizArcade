@@ -32,7 +32,12 @@
 
 <div id="home">
   <section class="wrap spot" aria-label="Find a game">
-    <h1>What do you want to play?</h1>
+    <div class="seg" id="seg" role="tablist" aria-label="Browse" data-active="SCRATCH">
+      <span class="seg-thumb" aria-hidden="true"></span>
+      <button role="tab" data-kind="SCRATCH" aria-selected="true">Games</button>
+      <button role="tab" data-kind="WEBSITES" aria-selected="false">Websites</button>
+    </div>
+    <h1 id="hero-title">What do you want to play?</h1>
     <div class="spot-box">
       <div class="guide" id="guide">
         <button class="cat-btn" id="cat" aria-label="Say hi to the cat"><img src="cat.png" alt="" width="96" height="96"></button>

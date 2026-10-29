@@ -1,12 +1,13 @@
 /* ------------------------------------------------------------------
-   ADD PROJECTS HERE.
-   Each name must match the files inside the PROJECTS folder:
-     PROJECTS/<name>/index.html   the game folder (index.html plus its assets)
-     PROJECTS/<name>.instruction  plain text shown under "Instructions"
-     PROJECTS/<name>.png          the thumbnail
-   Browsers can't list folders, so this array is the project list.
+   ADD PROJECTS HERE. Two collections, and the site shows one at a time.
+   Each name must match the files inside the matching folder:
+     PROJECTS/SCRATCH/<name>/index.html    PROJECTS/WEBSITES/<name>/index.html
+     PROJECTS/<COLLECTION>/<name>.instruction   plain text shown under "Instructions"
+     PROJECTS/<COLLECTION>/<name>.png           the thumbnail
+   Browsers can't list folders, so these arrays are the project lists.
+   (The visitor sees "Games" and "Websites": the word Scratch stays hidden until the plot twist.)
 ------------------------------------------------------------------- */
-const PROJECTS = [
+const SCRATCH = [
   "Bunny jump",
   "Advanced Engine Sim",
   "Submarine",
@@ -21,25 +22,46 @@ const PROJECTS = [
   "Boating",
   "Dropper",
   "Stones n Boat",
-  "cepatmakan",
   "Unicorn Rainbow Run Bottles Edition",
   "Bad Red",
   "Squirrel Game",
-  "Birdy",
-  "Squirell Fashion",
-  "sean"
+  "Birdy 2",
+  "Squirell Fashion"
 ];
 
+const WEBSITES = [
+  "Cepatmakan",
+  "Katakana",
+  "Shuto run"
+];
+
+const CATALOG = {
+  SCRATCH: {
+    names: SCRATCH, label: "Games", noun: "game", plural: "games", verb: "Play",
+    ask: "What do you want to play?",
+    twist: ["Every game here was built in Scratch.", "By students. Their first projects.", true],
+  },
+  WEBSITES: {
+    names: WEBSITES, label: "Websites", noun: "site", plural: "websites", verb: "Open",
+    ask: "What do you want to explore?",
+    twist: ["Every website here was written by students.", "Real code. Their first sites.", false],
+  },
+};
+let kind = "SCRATCH";                                  // which collection is on show
+try { const k = localStorage.getItem("nizcade-kind"); if (CATALOG[k]) kind = k; } catch {}
+const names = () => CATALOG[kind].names;
+const sample = (a, n) => [...a].sort(() => Math.random() - 0.5).slice(0, n);
+
 const $ = id => document.getElementById(id);
-// html -> PROJECTS/<name>/index.html (game folder); png and instruction -> PROJECTS/<name>.<ext>
-const path = (n, ext) => ext === "html"
-  ? "PROJECTS/" + encodeURIComponent(n) + "/index.html"
-  : "PROJECTS/" + encodeURIComponent(n) + "." + ext;
+// html -> PROJECTS/<KIND>/<name>/index.html; png and instruction -> PROJECTS/<KIND>/<name>.<ext>
+const path = (k, n, ext) => ext === "html"
+  ? `PROJECTS/${k}/${encodeURIComponent(n)}/index.html`
+  : `PROJECTS/${k}/${encodeURIComponent(n)}.${ext}`;
 const grid = $("grid"), ambient = $("ambient");
 let currentName = "";
 
-const go = name => { hideResults(); location.hash = "play=" + encodeURIComponent(name); };
-const random = () => PROJECTS[Math.floor(Math.random() * PROJECTS.length)];
+const go = name => { hideResults(); location.hash = "play=" + kind + "/" + encodeURIComponent(name); };
+const random = () => { const n = names(); return n[Math.floor(Math.random() * n.length)]; };
 
 /* blurred artwork behind the page: the glass has something colourful to refract */
 function setAmbient(names) {
@@ -49,13 +71,12 @@ function setAmbient(names) {
     const i = new Image();
     i.alt = "";
     i.decoding = "async";
-    i.src = path(n, "png");
+    i.src = path(kind, n, "png");
     i.onerror = () => i.remove();
     ambient.appendChild(i);
   });
 }
 
-const AMBIENT = [...PROJECTS].sort(() => Math.random() - 0.5).slice(0, 8);   // a few images are plenty once blurred
 
 /* a colour for each tile, taken from its artwork (falls back to one made from the name) */
 function nameColor(name) {
@@ -97,7 +118,7 @@ function makeCard(name) {
   card.querySelector("h3").textContent = name;
   card.querySelector(".initial").textContent = name.trim().charAt(0).toUpperCase();
   const img = card.querySelector("img");
-  img.src = path(name, "png");
+  img.src = path(kind, name, "png");
   img.onerror = () => img.remove();   // falls back to the coloured initial
   tint(img, card, name);
   card.onclick = () => go(name);
@@ -105,7 +126,7 @@ function makeCard(name) {
 }
 
 /* the cat guide */
-const GREETING = "Hi! Pick a game, any game.";
+let GREETING = "Hi! Pick a game, any game.";
 const CAT_LINES = [
   "Meow! Pick one!",
   "I like them all.",
@@ -170,8 +191,7 @@ const CAT_LINES = [
   "Nature has the best graphics. No update required.",
   "I tried to recycle this joke, but it was already used.",
   "Be kind to the planet. It's our only server.",
-  "Okay, your turn. Pick something cool!",
-  GREETING
+  "Okay, your turn. Pick something cool!"
 ];
 const say = text => { $("bubble").textContent = text; };
 function hop() {
@@ -181,17 +201,23 @@ function hop() {
   cat.classList.add("hop");
 }
 
-/* easter egg: 51 clicks on the cat within 20 s starts a party: 33 s of catfull.gif, then 30 s of chaos */
-const RAVE_CLICKS = 20, RAVE_WINDOW = 20000, RAVE_INTRO = 33500, RAVE_LENGTH = 134000;
-let catClicks = [], raving = null, musicEl = null, musicFade = 0;
+/* easter egg: 51 clicks on the cat within 20 s starts a party: 33 s of cat.mov, then 30 s of chaos */
+const RAVE_CLICKS = 20, RAVE_WINDOW = 20000, RAVE_INTRO = 33000, RAVE_LENGTH = 101000;
+let catClicks = [], raving = null, musicEl = null, musicFade = 0, introVideo = null;
+function loadIntro() {   // the cat.mov intro, buffered early. Muted so it never clashes with music.mp3
+  if (!introVideo) {
+    introVideo = document.createElement("video");
+    introVideo.id = "raver";
+    introVideo.src = "cat.mov";
+    introVideo.muted = introVideo.loop = introVideo.playsInline = true;
+    introVideo.preload = "auto";
+  }
+  return introVideo;
+}
 function loadMusic() {   // created on the first cat click so it is already buffered by the 51st
   if (!musicEl) {
     musicEl = new Audio("music.mp3"); musicEl.preload = "auto"; musicEl.loop = true;
-    const preloadVid = document.createElement("link");
-    preloadVid.rel = "preload";
-    preloadVid.as = "video";
-    preloadVid.href = "cat.mov";
-    document.head.appendChild(preloadVid);
+    loadIntro();
   }
   return musicEl;
 }
@@ -205,7 +231,7 @@ function catClick() {
   catClicks.push(now);
   const n = catClicks.length;
   if (n >= RAVE_CLICKS) return startRave();
-  say(n === 20 ? "Hey, easy there…" : n === 10 ? "Okay, what are you doing?" : n === 19 ? "Wait. Do not click again." : CAT_LINES[Math.floor(Math.random() * CAT_LINES.length)]);
+  say(n === 10 ? "Hey, easy there…" : n === 15 ? "Okay, what are you doing?" : n === 19 ? "Wait. Do not click again." : [...CAT_LINES, GREETING][Math.floor(Math.random() * (CAT_LINES.length + 1))]);
 }
 
 function startRave() {
@@ -228,13 +254,19 @@ function startRave() {
 
   // part 1: the real cat leaves its spot and the big catfull.gif takes the stage
   $("guide").style.visibility = "hidden";
-  st.el = new Image();
-  st.el.id = "raver";
+  st.el = loadIntro();
   st.el.className = "intro";
-  st.el.alt = "";
-  st.el.onerror = () => { st.el.onerror = null; st.el.src = "cat.png"; };
-  st.el.src = "catfull.gif";
+  st.el.currentTime = 0;
+  const introFallback = () => {                     // cat.mov missing or not playable here: show cat.png instead
+    const img = new Image();
+    img.id = "raver"; img.className = "intro"; img.alt = ""; img.src = "cat.png";
+    st.el.replaceWith(img);
+    st.el = img;
+  };
+  st.el.onerror = introFallback;
   document.body.appendChild(st.el);
+  if (st.el.error) introFallback();
+  else if (st.el.play) st.el.play().catch(() => {});
   new Image().src = "cat.gif";                      // preloaded for the switch
 
   clearInterval(musicFade);
@@ -257,7 +289,7 @@ function startRave() {
   // part 2: six spinning lights, and cat.gif bounces off the walls like a DVD logo
   const lights = [[320, 8, 0, 1.7], [190, 92, 0, 2.1], [50, 50, 100, 2.5], [130, 20, 100, 1.9], [270, 80, 100, 3.0], [10, 50, 0, 2.3]];
   let x = innerWidth / 2 - 60, y = innerHeight / 2 - 60, hue = 0, last = 0;
-  const speed = Math.max(innerWidth, 800) * 2;
+  const speed = Math.max(innerWidth, 800) * 0.45;
   let vx = speed, vy = speed * 0.78;
   const tick = now => {
     const dt = Math.min((now - last) / 1000, 0.05);
@@ -275,9 +307,13 @@ function startRave() {
     if (raving !== st) return;
     st.root.insertAdjacentHTML("beforeend", lights.map(([h, lx, ly, d], i) =>
       `<i class="beam" style="--h:${h};--x:${lx}%;--y:${ly}%;--d:${d}s;--s:${i % 2 ? -1 : 1}"></i>`).join(""));
-    st.el.className = "";
-    st.el.onerror = () => { st.el.onerror = null; st.el.src = "cat.png"; };
-    st.el.src = "cat.gif";
+    if (st.el.pause) st.el.pause();
+    const img = new Image();                        // the video makes way for cat.gif
+    img.id = "raver"; img.alt = "";
+    img.onerror = () => { img.onerror = null; img.src = "cat.png"; };
+    img.src = "cat.gif";
+    st.el.replaceWith(img);
+    st.el = img;
     if (reduced) st.el.style.transform = `translate3d(${x}px,${innerHeight * 0.6}px,0)`;   // calm version: no bouncing
     else { last = performance.now(); st.raf = requestAnimationFrame(tick); }
     st.timers.push(setTimeout(stopRave, RAVE_LENGTH));
@@ -292,9 +328,10 @@ function stopRave() {
   raving = null;
   st.timers.forEach(clearTimeout);
   cancelAnimationFrame(st.raf);
+  if (st.el.pause) st.el.pause();
   st.root.remove(); st.stop.remove(); st.el.remove(); st.note.remove();
   $("guide").style.visibility = "";
-  say("Phew! Now pick a game.");
+  say(`Phew! Now pick a ${CATALOG[kind].noun}.`);
   musicFade = setInterval(() => {                   // music fades out over about a second
     st.music.volume = Math.max(0, st.music.volume - 0.07);
     if (st.music.volume <= 0) { clearInterval(musicFade); st.music.pause(); }
@@ -312,7 +349,7 @@ function hideResults() {
 
 function renderResults() {
   const q = search.value.trim().toLowerCase();
-  matches = q ? PROJECTS.filter(n => n.toLowerCase().includes(q)).slice(0, 5) : [];
+  matches = q ? names().filter(n => n.toLowerCase().includes(q)).slice(0, 5) : [];
   active = Math.min(active, Math.max(matches.length - 1, 0));
   results.innerHTML = "";
   if (!matches.length) return hideResults();
@@ -322,10 +359,10 @@ function renderResults() {
     const b = document.createElement("button");
     b.className = "result" + (i === active ? " on" : "");
     b.tabIndex = -1;
-    b.innerHTML = '<span class="rthumb"><img alt=""></span><span class="rname"></span><span class="rgo">Play</span>';
+    b.innerHTML = '<span class="rthumb"><img alt=""></span><span class="rname"></span><span class="rgo">' + CATALOG[kind].verb + '</span>';
     b.querySelector(".rname").textContent = name;
     const im = b.querySelector("img");
-    im.src = path(name, "png");
+    im.src = path(kind, name, "png");
     im.onerror = () => im.remove();
     b.onmousedown = e => { e.preventDefault(); go(name); };   // before the input loses focus
     li.appendChild(b);
@@ -335,8 +372,9 @@ function renderResults() {
   search.setAttribute("aria-expanded", "true");
 }
 
-function setupSpot() {
-  [...PROJECTS].sort(() => Math.random() - 0.5).slice(0, 4).forEach(n => {
+function renderChips() {
+  $("chips").innerHTML = "";
+  sample(names(), 4).forEach(n => {
     const b = document.createElement("button");
     b.className = "chip";
     b.textContent = n;
@@ -345,6 +383,9 @@ function setupSpot() {
     b.onmouseleave = b.onblur = () => say(search.value.trim() ? $("bubble").textContent : GREETING);
     $("chips").appendChild(b);
   });
+}
+
+function setupSpot() {
   $("bar-search").onclick = () => {
     if (!$("player").hidden) location.hash = "";
     scrollTo({ top: 0, behavior: "smooth" });
@@ -356,8 +397,8 @@ function setupSpot() {
   $("cat").onclick = catClick;
   search.oninput = () => {
     active = 0; renderGrid(search.value); renderResults();
-    const q = search.value.trim().toLowerCase(), n = PROJECTS.filter(p => p.toLowerCase().includes(q)).length;
-    say(!q ? GREETING : n === 0 ? "Hmm, I can't find that one." : n === 1 ? "Found it! Press Enter." : `${n} games match. Nice!`);
+    const q = search.value.trim().toLowerCase(), n = names().filter(p => p.toLowerCase().includes(q)).length;
+    say(!q ? GREETING : n === 0 ? "Hmm, I can't find that one." : n === 1 ? "Found it! Press Enter." : `${n} ${CATALOG[kind].plural} match. Nice!`);
   };
   search.onfocus = renderResults;
   search.onblur = hideResults;
@@ -375,14 +416,60 @@ function setupSpot() {
   };
 }
 
-const cards = new Map();   // built once, then shown/hidden: no re-created images or re-computed colours while typing
+const cardCache = {};   // collection -> Map(name -> card): built once, then shown/hidden
+let gridKind = null;
 function renderGrid(filter = "") {
-  const q = filter.trim().toLowerCase();
-  if (!cards.size) PROJECTS.forEach(n => { const c = makeCard(n); cards.set(n, c); grid.appendChild(c); });
+  const q = filter.trim().toLowerCase(), c = CATALOG[kind];
+  if (gridKind !== kind) {
+    cardCache[kind] = cardCache[kind] || new Map(c.names.map(n => [n, makeCard(n)]));
+    grid.replaceChildren(...cardCache[kind].values());
+    gridKind = kind;
+  }
   let shown = 0;
-  cards.forEach((c, n) => { const ok = n.toLowerCase().includes(q); c.hidden = !ok; if (ok) shown++; });
+  cardCache[kind].forEach((el, n) => { const ok = n.toLowerCase().includes(q); el.hidden = !ok; if (ok) shown++; });
   $("empty").hidden = shown > 0;
-  $("count").textContent = q ? `${shown} of ${PROJECTS.length}` : `${PROJECTS.length} games`;
+  $("empty").textContent = c.names.length ? `No ${c.plural} match your search.` : `No ${c.plural} here yet.`;
+  $("count").textContent = q ? `${shown} of ${c.names.length}` : `${c.names.length} ${c.plural}`;
+}
+
+/* switching between Games and Websites: only one is ever shown */
+function applyKind(clear) {
+  const c = CATALOG[kind];
+  $("seg").dataset.active = kind;
+  document.querySelectorAll("#seg button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.kind === kind)));
+  $("hero-title").textContent = c.ask;
+  search.placeholder = "Search " + c.plural;
+  search.setAttribute("aria-label", "Search " + c.plural);
+  GREETING = `Hi! Pick a ${c.noun}, any ${c.noun}.`;
+  document.querySelector(".twist .t2").textContent = c.twist[0];
+  document.querySelector(".twist .t3").textContent = c.twist[1];
+  document.querySelector(".twist .t4").hidden = !c.twist[2];
+  $("surprise").disabled = !c.names.length;
+  if (clear) { search.value = ""; hideResults(); say(GREETING); }
+  renderChips();
+  renderGrid(search.value);
+  if (!$("home").hidden) setAmbient(c.names.slice(0,8));
+}
+
+function setKind(k) {
+  if (!CATALOG[k] || k === kind) return;
+  kind = k;
+  try { localStorage.setItem("nizcade-kind", k); } catch {}
+  applyKind(true);
+}
+
+function setupSeg() {
+  const btns = [...document.querySelectorAll("#seg button")];
+  btns.forEach(b => {
+    b.onclick = () => setKind(b.dataset.kind);
+    b.onkeydown = e => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      const next = btns[(btns.indexOf(b) + (e.key === "ArrowRight" ? 1 : -1) + btns.length) % btns.length];
+      next.focus();
+      setKind(next.dataset.kind);
+    };
+  });
 }
 
 /* the plot twist: lines appear one by one when scrolled into view */
@@ -401,6 +488,7 @@ function setupTwist() {
 
 async function openProject(name) {
   currentName = name;
+  $("stage").dataset.kind = kind === "WEBSITES" ? "site" : "game";
   stopRave();   // a game has its own sound
   if (!$("home").hidden) homeScroll = scrollY;
   $("home").hidden = true;
@@ -415,12 +503,12 @@ async function openProject(name) {
   const inst = $("inst");
   inst.textContent = "Loading…";
   try {
-    const res = await fetch(path(name, "instruction"));
+    const res = await fetch(path(kind, name, "instruction"));
     if (!res.ok) throw new Error(res.status);
     const text = (await res.text()).trim();
-    if (currentName === name) inst.textContent = text || "No instructions for this game.";
+    if (currentName === name) inst.textContent = text || `No instructions for this ${CATALOG[kind].noun}.`;
   } catch {
-    if (currentName === name) inst.textContent = "No instructions for this game.";
+    if (currentName === name) inst.textContent = `No instructions for this ${CATALOG[kind].noun}.`;
   }
 }
 
@@ -439,7 +527,7 @@ function setProgress(pct, label) {
 
 /* Downloads the game with a real progress bar, then starts it from the browser cache. */
 async function loadFrame(name) {
-  const id = ++loadId, f = $("frame"), url = path(name, "html");
+  const id = ++loadId, f = $("frame"), url = path(kind, name, "html");
   if (loadCtrl) loadCtrl.abort();
   loadCtrl = new AbortController();
   $("loader").hidden = false;
@@ -451,7 +539,7 @@ async function loadFrame(name) {
     if (!head.ok && head.status !== 405) {
       if (id === loadId) {
         $("loader").classList.add("err");
-        $("load-label").textContent = `Couldn't find this game. Check that PROJECTS/${name}/index.html exists.`;
+        $("load-label").textContent = `Couldn't find this ${CATALOG[kind].noun}. Check that PROJECTS/${kind}/${name}/index.html exists.`;
       }
       return;
     }
@@ -503,14 +591,17 @@ function closeProject() {
   document.body.classList.remove("playing");
   scrollTo({ top: homeScroll, behavior: "instant" });   // back to where you were in the list
   document.title = "Nizcade";
-  setAmbient(AMBIENT);
+  setAmbient(names().slice(0,8));
 }
 
 function route() {
-  const m = location.hash.match(/^#play=(.+)$/);
-  const name = m && decodeURIComponent(m[1]);
-  if (name && PROJECTS.includes(name)) openProject(name);
-  else closeProject();
+  const m = location.hash.match(/^#play=(?:(SCRATCH|WEBSITES)\/)?(.+)$/);   // old links without a collection mean Games
+  const k = m ? m[1] || "SCRATCH" : "";
+  const name = m && decodeURIComponent(m[2]);
+  if (name && CATALOG[k].names.includes(name)) {
+    if (k !== kind) { kind = k; applyKind(true); }
+    openProject(name);
+  } else closeProject();
 }
 
 const restart = () => currentName && loadFrame(currentName);
@@ -531,7 +622,8 @@ document.addEventListener("fullscreenchange", () => {
 window.onhashchange = route;
 
 setupSpot();
-renderGrid();
+setupSeg();
+applyKind(false);
 setupTwist();
 route();
 
