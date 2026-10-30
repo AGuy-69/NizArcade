@@ -26,7 +26,8 @@ const SCRATCH = [
   "Bad Red",
   "Squirrel Game",
   "Birdy 2",
-  "Squirell Fashion"
+  "Squirell Fashion",
+  "Simple 2P game"
 ];
 
 const WEBSITES = [
