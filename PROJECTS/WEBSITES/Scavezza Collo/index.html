@@ -71,9 +71,9 @@ button:hover{background:#fff}button.alt{background:#2c3652;color:#fff}
 #logo .l1{display:block;font-size:clamp(22px,3.4vw,40px);font-weight:800;letter-spacing:1px;line-height:1}
 #logo .l2{display:block;font-size:clamp(30px,4.8vw,58px);font-weight:900;color:var(--red);line-height:.95;letter-spacing:1px}
 #logo .l3{display:block;font-size:10px;letter-spacing:2.5px;opacity:.7;font-style:normal;margin-top:3px}
-#tiles{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;width:min(94vw,1020px);height:min(60vh,560px)}
+#tiles{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr .5fr;gap:8px;width:min(94vw,1020px);height:min(66vh,620px)}
 .tile{position:relative;overflow:hidden;border:0;border-radius:3px;padding:0;background:#12161f;color:#fff;text-align:left;cursor:pointer;font:inherit;box-shadow:0 8px 24px rgba(0,0,0,.45)}
-.tile.t-prac{grid-column:1;grid-row:1/3}.tile.t-race{grid-column:2;grid-row:1}.tile.t-set{grid-column:2;grid-row:2}.tile.t-ffa{grid-column:3;grid-row:1}.tile.t-alm{grid-column:3;grid-row:2}
+.tile.t-prac{grid-column:1;grid-row:1/3}.tile.t-race{grid-column:2;grid-row:1}.tile.t-set{grid-column:2;grid-row:2}.tile.t-ffa{grid-column:3;grid-row:1}.tile.t-alm{grid-column:3;grid-row:2}.tile.t-tut{grid-column:1/4;grid-row:3}
 .tile canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s,filter .25s;filter:brightness(.82) saturate(.95)}
 .tile::after{content:'';position:absolute;inset:0;background:linear-gradient(155deg,rgba(0,0,0,.6),rgba(0,0,0,0) 48%);pointer-events:none}
 .tile:hover canvas,.tile:focus-visible canvas{transform:scale(1.06);filter:brightness(1.08) saturate(1.05)}
@@ -158,8 +158,8 @@ kbd{background:#222a3a;border:1px solid #3a4560;border-radius:4px;padding:1px 6p
 }
 /* phones and small windows */
 @media(max-aspect-ratio:1/1){
- #tiles{grid-template-columns:1fr 1fr;grid-template-rows:1.35fr 1fr 1fr;height:min(72vh,680px)}
- .tile.t-prac{grid-column:1/3;grid-row:1}.tile.t-race{grid-column:1;grid-row:2}.tile.t-set{grid-column:2;grid-row:2}.tile.t-ffa{grid-column:1;grid-row:3}.tile.t-alm{grid-column:2;grid-row:3}
+ #tiles{grid-template-columns:1fr 1fr;grid-template-rows:1.35fr 1fr 1fr .6fr;height:min(78vh,740px)}
+ .tile.t-prac{grid-column:1/3;grid-row:1}.tile.t-race{grid-column:1;grid-row:2}.tile.t-set{grid-column:2;grid-row:2}.tile.t-ffa{grid-column:1;grid-row:3}.tile.t-alm{grid-column:2;grid-row:3}.tile.t-tut{grid-column:1/3;grid-row:4}
  #logo{margin-left:3vw}#home .foot{flex-wrap:wrap;gap:8px 16px}
 }
 @media(max-width:760px),(max-aspect-ratio:1/1){
@@ -175,7 +175,7 @@ kbd{background:#222a3a;border:1px solid #3a4560;border-radius:4px;padding:1px 6p
  #setCar{transform:scale(.8);transform-origin:right bottom}
 }
 @media(max-height:480px){
- #logo svg{width:44px;height:44px}#logo{margin-bottom:6px}#tiles{height:min(64vh,300px)}#home .foot{display:none}
+ #logo svg{width:44px;height:44px}#logo{margin-bottom:6px}#tiles{height:min(70vh,330px)}#home .foot{display:none}
 }
 #end h1{font-style:italic}
 .hdr .seg button{background:#1b2230;color:#fff;border-radius:4px;font-weight:800;letter-spacing:1.5px;border:2px solid transparent}.hdr .seg button.on{background:var(--red);color:#fff}.hdr .seg button:hover{border-color:#fff}
@@ -212,6 +212,21 @@ kbd{background:#222a3a;border:1px solid #3a4560;border-radius:4px;padding:1px 6p
 .anPre{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}#anOv .chip{margin:0;padding:6px 10px;font-size:11px;font-weight:700;letter-spacing:.5px;background:#1b2230;color:#fff;border:2px solid transparent;border-radius:4px;cursor:pointer}#anOv .chip.on{background:var(--red)}#anOv .chip:hover{border-color:#fff}
 .anRow{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}.anRow span{width:86px;font-weight:700}.anRow input[type=range]{flex:1;accent-color:var(--red)}.anRow input[type=number]{width:52px;background:#1b2230;color:#fff;border:2px solid #2c3652;border-radius:4px;padding:4px 6px;font:inherit}
 .anTot{font-size:12px;margin:8px 0 10px}.anKeep{display:block;font-size:12px;opacity:.85;margin-bottom:14px}.anBtns{display:flex;gap:8px;justify-content:flex-end}
+#tutCv{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40}
+#tutCard{position:fixed;z-index:60;background:rgba(8,11,18,.95);border:1px solid #2c3652;border-left:5px solid var(--red);border-radius:10px;color:#fff;text-align:left;padding:14px 18px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+#tutCard[hidden],#tutCv[hidden],#tutMini[hidden]{display:none}
+#tutCard.big{left:50%;top:50%;transform:translate(-50%,-50%);width:min(780px,95vw);max-height:92vh;overflow:auto}
+#tutCard.side{left:auto;right:14px;top:50%;transform:translateY(-50%);width:min(600px,52vw)}#tutCard.small{left:50%;top:8px;transform:translateX(-50%);width:min(500px,56vw)}
+#tutCard h2{margin:6px 0 8px;font-size:19px;font-style:italic;letter-spacing:.5px}#tutCard p{margin:6px 0;font-size:14px;line-height:1.5;opacity:.92}#tutCard ul,#tutCard ol{margin:6px 0 6px 20px;padding:0;font-size:14px;line-height:1.5}
+.tutHd{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:2px;opacity:.7}.tutHd button,.tutBtns button,#tutMini{background:#1b2230;color:#fff;border:2px solid transparent;border-radius:4px;padding:7px 14px;font:inherit;font-size:12px;font-weight:800;letter-spacing:.8px;cursor:pointer}
+.tutBtns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}.tutBtns .on{background:var(--red)}.tutHd button:hover,.tutBtns button:hover,#tutMini:hover{border-color:#fff}
+.tutDiag{display:block;width:100%;max-width:640px;margin:8px auto;border-radius:8px}.tutLive{font-size:15px;margin-top:8px;color:#7fdcff}.tutLive:empty{display:none}.tutLive .bar{display:inline-block;width:120px;height:9px;background:rgba(255,255,255,.12);border-radius:5px;vertical-align:middle;margin-left:6px}.tutLive .bar i{display:block;height:100%;background:#7fdcff;border-radius:5px}
+.tutWarn{background:rgba(255,59,48,.14);border:2px solid #ff3b30;border-radius:8px;padding:10px 12px;font-size:15px;line-height:1.45;margin:6px 0}.tutWarn b{color:#ffd23f}
+.tutKeys{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}.tutKeys td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.08)}.tutNote{font-size:12px!important;opacity:.7!important}
+.tutLeg{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:6px;font-size:12.5px;line-height:1.4}.tutLeg div:last-child{grid-column:1/3}.tutLeg i{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;background:#ffd23f;color:#000;font-style:normal;font-weight:900;font-size:11px;margin-right:6px}.tutLeg b{margin-right:6px}
+.tutLeg .g{color:#35e04a;font-weight:800}.tutLeg .a,.tutWarn .a{color:#ffc21a;font-weight:800}.tutLeg .r{color:#ff5a4f;font-weight:800}.b{color:#7fdcff;font-weight:800}#tutCard kbd{background:#242c3f;border:1px solid #3a4560;border-radius:4px;padding:1px 6px;font-size:12px}
+#tutMini{position:fixed;z-index:60;top:8px;left:50%;transform:translateX(-50%);opacity:.85}
+@media(max-width:900px){#tutCard.small{width:min(94vw,520px);top:4px;padding:8px 12px}.tutLeg{grid-template-columns:1fr}.tutLeg div:last-child{grid-column:1}}
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="hud" hidden>
@@ -235,8 +250,9 @@ kbd{background:#222a3a;border:1px solid #3a4560;border-radius:4px;padding:1px 6p
   <button class="tile t-set" data-go="settings"><canvas width="260" height="275"></canvas><span class="lab"><b>SETTINGS</b><small>Controls · PC / Mobile</small></span><i class="redbar"></i></button>
   <button class="tile t-ffa" data-go="ffa"><canvas width="260" height="275"></canvas><span class="lab"><b>RACE FFA</b><small>vs AI · mixed cars</small></span><i class="redbar"></i></button>
   <button class="tile t-alm" data-go="almanac"><canvas width="260" height="275"></canvas><span class="lab"><b>ALMANAC</b><small>Every track &amp; car</small></span><i class="redbar"></i></button>
+  <button class="tile t-tut" data-go="tutorial"><canvas width="1020" height="100"></canvas><span class="lab"><b>TUTORIAL</b><small>Learn to race a Formula · AVUS · every dial explained</small></span><i class="redbar"></i></button>
  </div>
- <div class="foot"><span><kbd>W A S D</kbd>drive</span><span><kbd>SPACE</kbd>handbrake</span><span><kbd>M</kbd>mute</span><span><kbd>ESC</kbd>back</span></div>
+ <div class="foot"><span><kbd>W A S D</kbd>drive</span><span><kbd>SPACE</kbd>handbrake</span><span><kbd>M</kbd>mute</span><span><kbd>ESC</kbd>back</span><span><kbd>FAINT WHITE WEDGE</kbd>behind a car = SLIPSTREAM, not lights</span></div>
 </div>
 <div class="scr" id="setup" hidden>
  <div class="hdr"><button class="bk" id="setBack">‹ BACK</button><div><h1 id="setTitle">PRACTICE</h1><div class="meta" id="setSub"></div></div><div class="sp"></div><div class="meta" id="setSel"></div><button class="go" id="go">START</button></div>
@@ -631,7 +647,7 @@ seg('sndSeg',v=>{soundOn=v=='on'});
 let W,H,dpr;
 function rs(){dpr=devicePixelRatio||1;W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr}addEventListener('resize',rs);rs();
 const keys={},mg=$('mm').getContext('2d');
-addEventListener('keydown',e=>{if(e.target&&e.target.tagName=='INPUT')return;keys[e.code]=1;if(e.code.startsWith('Arrow')||e.code=='Space')e.preventDefault();if(e.code=='KeyR'&&state!='menu'&&!demo)startRace();if(e.code=='Escape')escBack();if(e.code=='KeyV')showSens=!showSens;if(e.code=='KeyM'&&AUD){AUD.muted=!AUD.muted;AUD.master.gain.setTargetAtTime(AUD.muted?0:.7,AUD.ctx.currentTime,.05);addFeed('Engine sound '+(AUD.muted?'muted':'on'),'info')}if(e.code=='KeyT'&&state=='race'&&!demo&&!car.hold)respawn(car);if(e.code=='KeyO'&&!e.repeat)pitPress()});
+addEventListener('keydown',e=>{if(e.target&&e.target.tagName=='INPUT')return;keys[e.code]=1;if(e.code.startsWith('Arrow')||e.code=='Space')e.preventDefault();if(e.code=='KeyR'&&state!='menu'&&!demo&&!tut)startRace();if(e.code=='Escape'){if(tut)tutExit();else escBack()}if(e.code=='Enter'&&tut&&tut.pause){const b=$('tutNext');if(b)b.click()}if(e.code=='KeyV')showSens=!showSens;if(e.code=='KeyM'&&AUD){AUD.muted=!AUD.muted;AUD.master.gain.setTargetAtTime(AUD.muted?0:.7,AUD.ctx.currentTime,.05);addFeed('Engine sound '+(AUD.muted?'muted':'on'),'info')}if(e.code=='KeyT'&&state=='race'&&!demo&&!car.hold)respawn(car);if(e.code=='KeyO'&&!e.repeat)pitPress()});
 addEventListener('keyup',e=>keys[e.code]=0);
 const fmt=t=>{const m=t/60|0,s=t%60;return m+':'+(s<10?'0':'')+s.toFixed(2)};
 const K=170,DR=700,ZERO={th:0,br:0,st:0,hb:0};
@@ -669,9 +685,10 @@ function persona(){            // trait first, then numbers drawn inside that tr
 }
 
 function startRace(){
+ tutStop();
  trk=built[selT]||(built[selT]=build(TRACKS[selT]));
  marks=[];smoke=[];cars=[];
-LAPS=lapSel;demo=false;const base=CARS[sel],total=mode=='ai'?nAI+1:1,ps=total>8?Math.min(total-1,Math.floor(total*.65)):total>1?Math.min(2,total-1):0,pal=PAL.filter(c=>c!==base.c);let pi=0,ni=0;
+LAPS=lapSel;demo=false;const base=CARS[sel],total=mode=='ai'?nAI+1:1,ps=window.TUT_LAST?total-1:total>8?Math.min(total-1,Math.floor(total*.65)):total>1?Math.min(2,total-1):0,pal=PAL.filter(c=>c!==base.c);let pi=0,ni=0;
  audioInit();if(AUD){for(const v of AUD.voices.values())killVoice(v);AUD.voices.clear();if(AUD.ctx.state==='suspended'&&AUD.ctx.resume)AUD.ctx.resume()}
  layBoxes(trk,total);trk.grid=Array.from({length:total},(_,i)=>gridSlot(i));
  for(let i=0;i<total;i++){
@@ -707,6 +724,132 @@ function lapLogic(c){
  if(c.cpNext<4&&bi>=q&&bi<q+N/8)c.cpNext++;
  if(c.prevIdx>N*.75&&bi<N*.25&&c.cpNext>=4){c.laps++;c.cpNext=1;c.lapT.push(raceT-c.lapStart);c.lapStart=raceT;if(c.laps>=LAPS&&c.fin==null)c.fin=raceT}
  c.prevIdx=bi;
+}
+
+
+// ================= TUTORIAL: a guided Formula lap of AVUS =================
+let tut=null;
+const kmhNow=()=>car?Math.hypot(car.vx,car.vy)*.4:0,rankOf=c=>standings().indexOf(c);
+const tutCard=(()=>{const d=document.createElement('div');d.id='tutCard';d.hidden=true;document.body.appendChild(d);return d})();
+const tutCv=(()=>{const c=document.createElement('canvas');c.id='tutCv';c.hidden=true;document.body.appendChild(c);return c})();
+const tutMini=(()=>{const b=document.createElement('button');b.id='tutMini';b.hidden=true;b.textContent='EXIT TUTORIAL';document.body.appendChild(b);return b})();
+tutMini.onclick=()=>tutExit();
+function tutGate(on){if(AUD&&!AUD.muted)AUD.master.gain.setTargetAtTime(on?.12:.7,AUD.ctx.currentTime,.05)}
+function tutStop(){if(!tut)return;tut=null;tutCard.hidden=tutCv.hidden=tutMini.hidden=true;tutGate(false)}
+function tutExit(){tutStop();state='menu';$('hud').hidden=true;show('home')}
+function startTutorial(){
+ selT=TRACKS.findIndex(t=>t.name=='AVUS');sel=0;mode='ai';field='same';nAI=3;lapSel=3;curMode='tutorial';
+ window.TUT_LAST=1;startRace();window.TUT_LAST=0;
+ for(const c of cars)if(c.ai){Object.assign(c.p,{aggr:.3,fair:1,cons:1,react:1,trait:'Smooth'});c.p.pace=.93+Math.random()*.04}   // calm rivals, a touch slower so you can catch them and feel the tow
+ $('tn').textContent='TUTORIAL · AVUS · Formula';
+ tut={i:-1,pause:false,t:0,cone:false,hold:0};tutGo(0);
+}
+function tutDashDiagram(cv){
+ const g=cv.getContext('2d'),w=cv.width=720,h=cv.height=318,S=CARS[0];g.clearRect(0,0,w,h);
+ const fake={s:S,thrIn:.9,brk:0,use:.55,rpm:S.red*.88,gear:5,shiftT:0,slip:0,inLane:false,draft:.5,wear:.25,lim:false,spool:0};
+ g.save();g.translate(10,76);g.scale(2,2);drawDash(fake,312,1,g);g.restore();
+ const L=(n,t,x,y,tx,ty)=>{g.strokeStyle='#7fdcff';g.lineWidth=2;g.beginPath();g.moveTo(x,y);g.lineTo(tx,ty);g.stroke();g.fillStyle='#7fdcff';g.beginPath();g.arc(tx,ty,4,0,7);g.fill();
+  g.font='800 13px system-ui,sans-serif';const tw=g.measureText(t).width+34;g.fillStyle='#10192a';g.strokeStyle='#7fdcff';g.beginPath();g.roundRect(x-tw/2,y-14,tw,26,13);g.fill();g.stroke();
+  g.fillStyle='#ffd23f';g.beginPath();g.arc(x-tw/2+14,y-1,9,0,7);g.fill();g.fillStyle='#000';g.textAlign='center';g.textBaseline='middle';g.fillText(n,x-tw/2+14,y);g.fillStyle='#fff';g.textAlign='left';g.fillText(t,x-tw/2+28,y)};
+ L(1,'REV LIGHTS',140,22,180,126);L(9,'STATUS TAG',360,22,360,88);L(5,'THROTTLE',520,22,500,156);L(8,'TYRE LIFE',660,56,672,160);
+ L(2,'GEAR',70,266,70,200);L(3,'SPEED',250,266,250,170);L(6,'BRAKE',520,266,500,200);L(4,'RPM',340,298,330,176);L(7,'GRIP',640,266,590,196);
+}
+function tutSlipDiagram(cv){
+ const g=cv.getContext('2d'),w=cv.width=620,h=cv.height=215;
+ g.fillStyle='#1e3a26';g.fillRect(0,0,w,h);g.fillStyle='#3a3f4a';g.fillRect(0,52,w,112);g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=3;g.setLineDash([22,18]);g.beginPath();g.moveTo(0,108);g.lineTo(w,108);g.stroke();g.setLineDash([]);
+ g.fillStyle='rgba(127,220,255,.24)';g.beginPath();g.moveTo(440,98);g.lineTo(90,38);g.lineTo(90,178);g.lineTo(440,118);g.closePath();g.fill();g.strokeStyle='#7fdcff';g.lineWidth=2.5;g.setLineDash([8,6]);g.stroke();g.setLineDash([]);
+ carAt(g,0,495,108,0,2.2,'#2f6fe0');carAt(g,0,215,108,0,2.2,'#e10600');
+ g.textAlign='center';g.shadowColor='#000';g.shadowBlur=6;g.fillStyle='#7fdcff';g.font='italic 900 30px system-ui,sans-serif';g.fillText('SLIPSTREAM',265,30);
+ g.fillStyle='#ff6b6b';g.font='italic 900 30px system-ui,sans-serif';g.fillText('NOT LIGHTS',265,204);g.shadowBlur=0;
+ // crossed-out lamp
+ g.save();g.translate(560,176);g.fillStyle='#ffe066';g.beginPath();g.arc(0,0,13,0,7);g.fill();g.strokeStyle='#ffe066';g.lineWidth=3;for(let a=-.9;a<=.9;a+=.45){g.beginPath();g.moveTo(Math.cos(a+3.14)*19,Math.sin(a+3.14)*19);g.lineTo(Math.cos(a+3.14)*30,Math.sin(a+3.14)*30);g.stroke()}
+ g.strokeStyle='#ff3b30';g.lineWidth=6;g.beginPath();g.arc(0,0,26,0,7);g.moveTo(-19,19);g.lineTo(19,-19);g.stroke();g.restore();
+}
+const TUT=[
+{t:'Welcome to the AVUS tutorial',pause:1,h:`<p>You drive a <b>Formula car</b> round <b>AVUS</b>: two enormous straights joined by a tight corner at each end. Three calm rivals share the track.</p>
+ <p>Every step explains one thing. The race is <b>paused</b> while you read; the steps marked <i>do</i> need you to drive.</p>
+ <table class="tutKeys"><tr><td><kbd>W</kbd> <kbd>↑</kbd></td><td>Throttle</td><td><kbd>S</kbd> <kbd>↓</kbd></td><td>Brake</td></tr><tr><td><kbd>A</kbd> <kbd>D</kbd> <kbd>←</kbd> <kbd>→</kbd></td><td>Steer</td><td><kbd>SPACE</kbd></td><td>Handbrake</td></tr>
+ <tr><td><kbd>T</kbd></td><td>Respawn on track</td><td><kbd>V</kbd></td><td>Show detectors</td></tr><tr><td><kbd>M</kbd></td><td>Mute engine</td><td><kbd>ESC</kbd></td><td>Leave tutorial</td></tr></table>
+ <p class="tutNote">The gearbox is automatic: you only use throttle, brake, steering and (rarely) the handbrake.</p>`},
+{t:'The dashboard, dial by dial',pause:1,h:`<canvas id="tutDash" class="tutDiag"></canvas><div class="tutLeg">
+ <div><i>1</i><b>REV LIGHTS</b> The row of 15 dots <u>on the dash</u>. They fill green → red → blue as the engine revs climb. All flashing purple = engine on the limiter. <u>These are the only “lights” on screen.</u></div>
+ <div><i>2</i><b>GEAR</b> The gear you are in (shown automatically; “–” while it shifts).</div>
+ <div><i>3</i><b>SPEED</b> Your speed in km/h.</div>
+ <div><i>4</i><b>RPM</b> Engine revs. It turns yellow near the red line.</div>
+ <div><i>5</i><b>THROTTLE</b> How hard the accelerator is pressed (W / ↑).</div>
+ <div><i>6</i><b>BRAKE</b> How hard you are braking (S / ↓). It builds gradually, so squeeze it.</div>
+ <div><i>7</i><b>GRIP</b> How much of the tyres’ grip you are using. <span class="g">Green</span> = safe, <span class="a">amber</span> = near the limit, <span class="r">red</span> = over the limit, you are sliding.</div>
+ <div><i>8</i><b>TYRE LIFE</b> Percent of tyre left. Sliding and pushing wear them; worn tyres grip less.</div>
+ <div><i>9</i><b>STATUS TAG</b> Appears above the dash: <span class="r">TRACTION LOST</span> = sliding, ease off. <span class="a">PIT LIMITER</span> = in the pit lane. <span class="b">SLIPSTREAM +n%</span> = you are in the tow of the car ahead.</div></div>`,on(){tutDashDiagram($('tutDash'))}},
+{t:'Launch (do)',h:`<p>Wait for the countdown, then <b>hold W</b> (or ↑) to launch. Watch ① the rev lights and ② the gear: the car changes gear by itself.</p>`,check(){return state=='race'&&kmhNow()>150}},
+{t:'Flat out down the straight (do)',h:`<p>Stay on the throttle and keep the car straight. Gears climb on their own, ① the rev lights light up and ③ the speed keeps rising. ⑦ GRIP stays green because you aren’t turning.</p>`,live(){return 'Speed <b>'+Math.round(kmhNow())+'</b> km/h'},check(){return state=='race'&&(kmhNow()>=CARS[0].vmax*.4*.8||tut.t>14)}},
+{t:'Slipstream: the faint wedge behind every car',pause:1,side:1,cone:1,h:`<div class="tutWarn">⚠ THE FAINT WEDGE BEHIND A CAR IS <b>SLIPSTREAM</b>. IT IS <b>NOT LIGHTS</b>.<br>Cars have no rear lights, brake lights or beams. The wedge is the disturbed air (the “tow”) that a fast car leaves behind it.</div>
+ <canvas id="tutSlip" class="tutDiag"></canvas>
+ <ul><li><b>Inside the wedge</b> you get less drag: up to <b>+14% engine pull</b>. The blue <span class="b">SLIPSTREAM +n%</span> tag ⑨ tells you how much.</li>
+ <li>The trade-off: <b>dirty air</b> cuts your tyre grip by up to 12%, so leave the wedge <b>before</b> you brake or turn.</li>
+ <li>Every car makes one, you too. The AI use it and so can the cars behind you.</li></ul>`,on(){tutSlipDiagram($('tutSlip'))}},
+{t:'Get in the tow (do)',cone:1,h:`<p>Close up behind a car ahead, <b>inside its wedge</b>, and hold W. Keep it there for a moment.</p>`,live(){const d=car.draft;return 'Slipstream <b>'+Math.round(d*14)+'%</b> <span class="bar"><i style="width:'+Math.min(100,d*100)+'%"></i></span>'},
+ check(dt){tut.hold=car.draft>.3?tut.hold+dt:0;return tut.hold>.7}},
+{t:'Pass using the tow (do)',cone:1,enter(){tut.pos0=rankOf(car);if(tut.pos0==0)tutGo(tut.i+1)},h:`<p>While you are in the tow, <b>steer out to one side</b> (A or D) and use the extra pull to overtake. Move out <b>early</b>, before you are alongside: a late move into a car beside you earns a penalty.</p>`,
+ live(){return 'Position <b>P'+(rankOf(car)+1)+'</b>'},check(){return rankOf(car)<tut.pos0}},
+{t:'Brake, turn, accelerate (do)',enter(){tutBrakeMark()},h:`<p>The corner is coming. A <b>red BRAKE line</b> marks where to start braking in a Formula car at this speed (the dot marks the apex).</p>
+ <ol><li><b>Get out of the tow</b> and straighten up.</li><li><b>Brake in a straight line</b> at the line (watch ⑥ BRAKE), then ease off the brake as you turn in.</li><li><b>Aim for the apex</b>, then squeeze the throttle on the way out.</li></ol>
+ <p>Keep ⑦ GRIP out of red. If <span class="r">TRACTION LOST</span> appears, lift off and straighten the wheel.</p>`,
+ live(){const N=trk.N,d=((tut.bp-car.idx+N)%N)*SP/9;return d<N*SP/18?'Brake line in <b>'+Math.round(d)+' m</b>':'Corner passed: well done'},
+ check(){const d=(car.idx-tut.ap+trk.N)%trk.N;if(((tut.ap-car.idx+trk.N)%trk.N)<250)tut.near=1;return tut.near&&d>=6&&d<150}},
+{t:'Racing clean',pause:1,h:`<ul class="tutL"><li>Cars have a <b>front, rear, side and diagonal detector</b> (press <kbd>V</kbd> to see yours). Don’t move into a space where a car is.</li>
+ <li>After a collision the <b>stewards</b> work out who was at fault from the brake, throttle and steering inputs, what each car could see, and the order of events.</li>
+ <li><b>About 50/50?</b> It is a <b>racing incident</b>: no penalty.</li><li><b>Warnings (⚠)</b> are given for small contacts and for leaving the track. Three warnings = <b>+5 s</b>. Clear faults cost <b>+2, +5 or +10 s</b> by how hard the crash was.</li>
+ <li>Kerbs are fine; grass slows you a lot and counts toward track-limit warnings.</li></ul>`},
+{t:'Tutorial complete!',pause:1,final:1,h:`<p>You now know every dial, what the slipstream wedge is (<b>not lights!</b>), and how to brake, turn and pass cleanly. The race is still running if you want to keep driving.</p>`}
+];
+function tutGo(i){
+ if(i>=TUT.length){tutExit();return}
+ tut.i=i;tut.t=0;tut.hold=0;const st=TUT[i];tut.pause=!!st.pause;tut.cone=!!st.cone;tutGate(tut.pause);
+ tutCard.hidden=false;tutCv.hidden=false;tutMini.hidden=true;tutCard.className=st.pause?'big'+(st.side?' side':''):'small';
+ const btns=st.final?'<button class="on" id="tFree">KEEP DRIVING</button><button id="tReal">RACE FOR REAL</button><button id="tAgain">REPLAY TUTORIAL</button><button id="tHome">MAIN MENU</button>':
+  st.pause?'<button class="on" id="tutNext">NEXT ▸</button>':'<button id="tutSkip">SKIP STEP ▸</button>';
+ tutCard.innerHTML='<div class="tutHd"><span>STEP '+(i+1)+' / '+TUT.length+'</span><button id="tutX">EXIT</button></div><h2>'+st.t+'</h2><div class="tutBody">'+st.h+'</div><div class="tutLive" id="tutLive"></div><div class="tutBtns">'+btns+'</div>';
+ const on=(id,f)=>{const e=$(id);if(e)e.onclick=f};
+ on('tutX',tutExit);on('tutNext',()=>tutGo(i+1));on('tutSkip',()=>tutGo(i+1));
+ on('tFree',()=>{tut.pause=false;tut.free=true;tut.cone=false;tutGate(false);tutCard.hidden=true;tutCv.hidden=true;tutMini.hidden=false});
+ on('tReal',()=>{tutStop();openSetup('race')});on('tAgain',()=>{tutStop();startTutorial()});on('tHome',tutExit);
+ if(st.on)st.on();if(st.enter)st.enter();
+}
+function tutUpdate(dt){
+ if(!tut||tut.pause||tut.free)return;const st=TUT[tut.i];if(!st)return;tut.t+=dt;
+ const lv=$('tutLive');if(lv&&st.live)lv.innerHTML=st.live();
+ if(st.check&&st.check(dt))tutGo(tut.i+1);
+}
+function tutBrakeMark(){                                    // where to brake for the next big corner, from the same speed profile the AI uses
+ const v=vtFor(0),N=trk.N,top=CARS[0].vmax;let j=car.idx,n=0;
+ while(v[j%N]<.9*top&&n<N){j++;n++}
+ while(v[j%N]>=.9*top&&n<N){j++;n++}
+ let a=j,m=1e9;for(let k=0;k<90;k++){const i=(j+k)%N;if(v[i]<m){m=v[i];a=i}}
+ tut.bp=(j-4+N)%N;tut.ap=a%N;tut.near=0;
+}
+function tutDraw(){
+ if(!tut||tutCv.hidden)return;const st=TUT[tut.i];const d=Math.min(2,devicePixelRatio||1);
+ if(tutCv.width!==W*d||tutCv.height!==H*d){tutCv.width=W*d;tutCv.height=H*d}
+ const g=tutCv.getContext('2d');g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,W,H);
+ const sx=x=>(x-cam.x)*zoom+W/2,sy=y=>(y-cam.y)*zoom+H/2,tag=(x,y,lines,col,bg)=>{
+  g.font='900 17px system-ui,sans-serif';let w=0;for(const l of lines)w=Math.max(w,g.measureText(l).width);w+=26;const h=lines.length*22+14;
+  x=clamp(x,w/2+6,W-w/2-6);y=clamp(y,h/2+6,H-h/2-90);g.fillStyle=bg||'rgba(8,12,22,.92)';g.strokeStyle=col;g.lineWidth=3;g.beginPath();g.roundRect(x-w/2,y-h/2,w,h,10);g.fill();g.stroke();
+  g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';lines.forEach((l,k)=>{g.fillStyle=k==0?col:'#fff';g.fillText(l,x,y-h/2+7+11+k*22)});return{x,y,h}};
+ if(st&&st.cone){
+  const tl=[];for(const c of cars){if(Math.hypot(c.vx,c.vy)<250)continue;g.save();g.translate(sx(c.x),sy(c.y));g.rotate(c.a);g.scale(zoom,zoom);g.setLineDash([8,6]);g.strokeStyle='rgba(127,220,255,.9)';g.lineWidth=2/zoom;
+   g.beginPath();g.moveTo(-c.s.len/2,-6);g.lineTo(-DR,-70);g.lineTo(-DR,70);g.lineTo(-c.s.len/2,6);g.closePath();g.stroke();g.restore();
+   const di=(c.idx-car.idx+trk.N)%trk.N;if(c!==car&&di>0&&di<trk.N/2)tl.push([di,c])}
+  tl.sort((a,b)=>a[0]-b[0]);const lead=tl.length?tl[0][1]:Math.hypot(car.vx,car.vy)>250?car:null;
+  if(lead){const px=lead.x-Math.cos(lead.a)*DR*.55,py=lead.y-Math.sin(lead.a)*DR*.55,X=sx(px),Y=sy(py),below=Y<H*.5;
+   const b=tag(X,below?Y+130:Y-130,['THIS IS SLIPSTREAM','NOT LIGHTS · it is the tow zone behind the car'],'#7fdcff');
+   g.strokeStyle='#7fdcff';g.lineWidth=3;g.beginPath();g.moveTo(b.x,below?b.y-b.h/2:b.y+b.h/2);g.lineTo(X,Y);g.stroke();g.fillStyle='#7fdcff';g.beginPath();g.arc(X,Y,6,0,7);g.fill()}
+ }
+ if(st&&st.bp!=null||tut.bp!=null&&TUT[tut.i]&&TUT[tut.i].t.startsWith('Brake')){
+  const{pts,nrm,hw}=trk,b=pts[tut.bp],n=nrm[tut.bp],h=hw[tut.bp],a=pts[tut.ap];
+  g.strokeStyle='#ff3b30';g.lineWidth=8;g.beginPath();g.moveTo(sx(b[0]-n[0]*h),sy(b[1]-n[1]*h));g.lineTo(sx(b[0]+n[0]*h),sy(b[1]+n[1]*h));g.stroke();
+  {const X=sx(b[0]+n[0]*(h+70)),Y=sy(b[1]+n[1]*(h+70));if(X>-60&&X<W+60&&Y>-60&&Y<H+60)tag(X,Y,['BRAKE HERE'],'#ff3b30')}
+  {const X=sx(a[0]),Y=sy(a[1]);if(X>-60&&X<W+60&&Y>-60&&Y<H+60){g.fillStyle='#ffd23f';g.beginPath();g.arc(X,Y,9,0,7);g.fill();tag(X,Y-40,['APEX'],'#ffd23f')}}}
 }
 
 // ----- slipstream -----
@@ -811,8 +954,8 @@ const Tn=x=>clamp((.35+1.5*x-x*x)/.9125,.25,1),MREF=.8+.2*Tn(.965);       // tor
 const DASH={W:350,H:80,thr:0,brk:0,spd:0,grp:0,t:0};
 const dctx=(()=>{const e=$('dash'),d=Math.min(2,window.devicePixelRatio||1);e.width=DASH.W*d;e.height=DASH.H*d;const g=e.getContext('2d');g.scale(d,d);return g})();
 const DF='"Bahnschrift","Segoe UI","Helvetica Neue",Arial,sans-serif';
-function drawDash(c,kmh,dt){
- const D=DASH,g=dctx,s=c.s,A=Math.PI/180,oy=16;D.t+=dt;
+function drawDash(c,kmh,dt,gx){
+ const D=DASH,g=gx||dctx,s=c.s,A=Math.PI/180,oy=16;D.t+=dt;
  D.thr+=((c.thrIn||0)-D.thr)*Math.min(1,dt*14);D.brk+=((c.brk||0)-D.brk)*Math.min(1,dt*20);D.spd+=(kmh-D.spd)*Math.min(1,dt*12);D.grp+=(Math.min(1.2,c.use||0)-D.grp)*Math.min(1,dt*10);
  const jet=!!s.jet,ev=s.g===1&&!jet,rr=c.rpm/s.red,blink=Math.floor(D.t*9)%2===0,lim=c.lim&&blink;
  const arc=(x,y,r,a0,a1,col,w)=>{g.beginPath();g.arc(x,y,r,a0*A,a1*A);g.strokeStyle=col;g.lineWidth=w;g.lineCap='round';g.stroke()};
@@ -1214,11 +1357,11 @@ function buildResults(){
  return h;
 }
 function showResults(){
- if(resShown)return;resShown=true;$('wait').hidden=true;
+ if(resShown)return;if(tut){resShown=true;return}resShown=true;$('wait').hidden=true;
  $('res').innerHTML=buildResults();$('end').hidden=false;
 }
 function update(dt){
- if(state=='menu'){if(AUD&&AUD.voices.size)audioUpdate(dt);return}uiT+=dt;
+ if(state=='menu'){if(AUD&&AUD.voices.size)audioUpdate(dt);return}if(tut&&tut.pause)return;uiT+=dt;
  if(state=='count'){cd-=dt;if(cd<=0){state='race';goT=.9;raceT=0}}else if(state=='race'||(state=='done'&&!resShown))raceT+=dt;
  if(goT>0)goT-=dt;
  const racing=state=='race';
@@ -1428,7 +1571,7 @@ function draw(){
  ctx.setTransform(dpr*zoom,0,0,dpr*zoom,dpr*W/2,dpr*H/2);ctx.translate(-cam.x+(Math.random()-.5)*shake,-cam.y+(Math.random()-.5)*shake);
  drawTrack();
  if(cars.length>1)for(const c of cars){const sp=Math.hypot(c.vx,c.vy);if(sp<250)continue;   // visible tow zone behind fast cars
-  ctx.fillStyle='rgba(255,255,255,'+Math.min(.09,sp/850*.09)+')';ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);
+  const tc=tut&&tut.cone;ctx.fillStyle=(tc?'rgba(127,220,255,':'rgba(255,255,255,')+Math.min(tc?.2:.09,sp/850*(tc?.2:.09))+')';ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);
   ctx.beginPath();ctx.moveTo(-c.s.len/2,-6);ctx.lineTo(-DR,-70);ctx.lineTo(-DR,70);ctx.lineTo(-c.s.len/2,6);ctx.fill();ctx.restore()}
  const onBr=c=>trk.cross&&Math.min(Math.abs(c.idx-trk.cross.over),trk.N-Math.abs(c.idx-trk.cross.over))<=9;
  const dcar=c=>{ctx.save();ctx.translate(c.x+5,c.y+6);ctx.rotate(c.a);ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.roundRect(-c.s.len/2,-c.s.bw/2-2,c.s.len,c.s.bw+4,8);ctx.fill();ctx.restore();
@@ -1446,7 +1589,7 @@ function draw(){
 let last=performance.now();
 // ================= Scavezza Collo UI: home, setup, almanac =================
 const SCRS=['home','setup','alm','settings'];
-function show(id){for(const x of SCRS)$(x).hidden=x!==id;if(id==='home')tileArtAll()}
+function show(id){tutStop();for(const x of SCRS)$(x).hidden=x!==id;if(id==='home')tileArtAll()}
 function hideScr(){for(const x of SCRS)$(x).hidden=true}
 const MODES={practice:{t:'PRACTICE',s:'Solo · no rivals · free laps',m:'solo',f:'same',go:'START PRACTICE'},race:{t:'RACE',s:'Race vs AI · everyone drives your car',m:'ai',f:'same',go:'START RACE'},ffa:{t:'RACE FFA',s:'Race vs AI · rivals drive a random mix of cars',m:'ai',f:'ffa',go:'START RACE'}};
 function updSel(){$('setSel').textContent=(TRACKS[selT].name+' · '+CARS[sel].n).toUpperCase()}
@@ -1541,6 +1684,10 @@ function carAt(g,i,x,y,ang,sc,col,fl){const s={...CARS[i]};if(col)s.c=col;g.save
 function tileArtAll(){
  if(tileArtAll.done)return;tileArtAll.done=1;
  const cv=c=>document.querySelector(c+' canvas'),G=c=>cv(c).getContext('2d');
+ {const g=G('.t-tut'),w=1020,h=100;grassBg(g,w,h,5);roadBand(g,w/2,56,0,70);
+  g.fillStyle='rgba(127,220,255,.22)';g.beginPath();g.moveTo(822,52);g.lineTo(560,26);g.lineTo(560,86);g.lineTo(822,60);g.closePath();g.fill();g.setLineDash([8,6]);g.strokeStyle='#7fdcff';g.lineWidth=2;g.stroke();g.setLineDash([]);
+  carAt(g,0,865,56,0,1.45,'#2f6fe0');carAt(g,0,650,56,0,1.45,'#e10600');
+  g.textAlign='center';g.font='italic 900 17px system-ui,sans-serif';g.shadowColor='#000';g.shadowBlur=6;g.fillStyle='#7fdcff';g.fillText('SLIPSTREAM',690,16);g.fillStyle='#ff6b6b';g.fillText('NOT LIGHTS',690,95);g.shadowBlur=0}
  {const g=G('.t-prac'),w=520,h=560,a=-.6;grassBg(g,w,h,7);roadBand(g,w*.5,h*.55,a,330);
   g.save();g.translate(w*.52,h*.5);g.rotate(a);for(let i=0;i<14;i++){g.strokeStyle='rgba(255,255,255,'+(.05+Math.random()*.1)+')';g.lineWidth=1+Math.random()*2;const y=(Math.random()-.5)*120;g.beginPath();g.moveTo(-70-Math.random()*60,y);g.lineTo(-330-Math.random()*200,y);g.stroke()}
   g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=7;for(const y of[-14,14]){g.beginPath();g.moveTo(-60,y);g.lineTo(-460,y);g.stroke()}g.restore();
@@ -1721,7 +1868,7 @@ function ctlNote(){$('ctlNote').textContent=ctl=='mobile'?'Mobile mode: on-scree
 function setCtl(v,save){
  ctl=v=='mobile'?'mobile':'pc';document.body.classList.toggle('mob',ctl=='mobile');
  document.querySelectorAll('.ctlOpt').forEach(b=>b.classList.toggle('on',b.dataset.v==ctl));ctlNote();
- $('home').querySelector('.foot').innerHTML=ctl=='mobile'?'<span>On-screen controls · steer, gas, brake, handbrake</span><span>Change this in Settings</span>':'<span><kbd>W A S D</kbd>drive</span><span><kbd>SPACE</kbd>handbrake</span><span><kbd>M</kbd>mute</span><span><kbd>ESC</kbd>back</span>';
+ $('home').querySelector('.foot').innerHTML=ctl=='mobile'?'<span>On-screen controls · steer, gas, brake, handbrake</span><span>Faint white wedge behind a car = SLIPSTREAM, not lights</span>':'<span><kbd>W A S D</kbd>drive</span><span><kbd>SPACE</kbd>handbrake</span><span><kbd>M</kbd>mute</span><span><kbd>ESC</kbd>back</span><span><kbd>FAINT WHITE WEDGE</kbd>behind a car = SLIPSTREAM, not lights</span>';
  if(save){try{localStorage.setItem('sc_ctl',ctl)}catch(e){}}}
 function openSettings(){stopDemo();state='menu';$('hud').hidden=true;show('settings')}
 function touchInit(){
@@ -1738,7 +1885,7 @@ function touchInit(){
   if(on)$('tbPit').classList.toggle('pulse',!!(car&&car.hold))},120)}
 
 function uiInit(){
- document.querySelectorAll('.tile').forEach(b=>b.onclick=()=>{const k=b.dataset.go;if(k=='almanac')openAlm();else if(k=='settings')openSettings();else openSetup(k)});
+ document.querySelectorAll('.tile').forEach(b=>b.onclick=()=>{const k=b.dataset.go;if(k=='almanac')openAlm();else if(k=='settings')openSettings();else if(k=='tutorial')startTutorial();else openSetup(k)});
  $('setgBack').onclick=()=>show('home');document.querySelectorAll('.ctlOpt').forEach(b=>b.onclick=()=>setCtl(b.dataset.v,true));
  let saved=null;try{saved=localStorage.getItem('sc_ctl')}catch(e){}
  setCtl(saved||((matchMedia&&matchMedia('(pointer:coarse)').matches)?'mobile':'pc'),false);touchInit();
@@ -1749,5 +1896,5 @@ function uiInit(){
  carLoop();show('home')}
 
 uiInit();
-(function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop)})(last);
+(function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);if(tut)tutUpdate(dt);draw();tutDraw();requestAnimationFrame(loop)})(last);
 </script></body></html>
